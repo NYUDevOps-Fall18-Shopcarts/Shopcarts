@@ -1,3 +1,3 @@
 # Shopcarts
-Shopcart Development
+Shopcart Development:
 A collection of products to buy
