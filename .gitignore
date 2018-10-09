@@ -1,3 +1,17 @@
+# Local environment
+.DS_Store
+Thumbs.db
+
+# Vagrant
+.vagrant
+
+# patch file
+*.patch
+
+# database files
+db/*
+!db/.keep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
