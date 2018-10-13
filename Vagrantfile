@@ -53,23 +53,41 @@ Vagrant.configure(2) do |config|
     # Install app dependencies
     cd /vagrant
     pip install -r requirements.txt
+    #sudo apt-get install python-pip python-dev libmysqlclient-dev
+    #sudo pip install MySQL-python
   SHELL
 
   ######################################################################
-  # Add Redis docker container
+
+  # Add MySQL docker container
+
   ######################################################################
   config.vm.provision "shell", inline: <<-SHELL
-    # Prepare Redis data share
-    sudo mkdir -p /var/lib/redis/data
-    sudo chown ubuntu:ubuntu /var/lib/redis/data
+    # Prepare MySQL data share
+    sudo mkdir -p /var/lib/mysql
+    sudo chown vagrant:vagrant /var/lib/mysql
   SHELL
 
-  # Add Redis docker container
+  # Add MySQL docker container
   config.vm.provision "docker" do |d|
-    d.pull_images "redis:alpine"
-    d.run "redis:alpine",
-      args: "--restart=always -d --name redis -h redis -p 6379:6379 -v /var/lib/redis/data:/data"
+    d.pull_images "mariadb"
+    d.run "mariadb",
+      args: "--restart=always -d --name mariadb -p 3306:3306 -v /var/lib/mysql:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=passw0rd"
   end
+
+
+  # Create the database after Docker is running
+  config.vm.provision "shell", inline: <<-SHELL
+    # Wait for mariadb to come up
+    echo "Waiting 20 seconds for mariadb to start..."
+    sleep 20
+    cd /vagrant
+    python manage.py development
+    #python manage.py test
+    cd
+  SHELL
+
+end
 
 
   # Enable provisioning with a shell script. Additional provisioners such as
@@ -79,4 +97,4 @@ Vagrant.configure(2) do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
-end
+#end
