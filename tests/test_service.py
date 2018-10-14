@@ -49,8 +49,8 @@ class TestShopcartServer(unittest.TestCase):
         db.session.remove()
         db.drop_all()
 
-    def test_create_shopcart_entry(self):
-        """ Create a new Shopcart entry """
+    def test_create_shopcart_entry_new_product(self):
+        """ Create a new Shopcart entry - add new product"""
 
         # add a new product to shopcart of user
         new_product = dict(user_id=2, product_id=1, quantity=1, price=12.00)
@@ -66,10 +66,31 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(new_json['product_id'], 1)
 
         #Check if you can find the entry in database
-        print(Shopcart.query.all())
         result = Shopcart.find(new_product['user_id'], new_product['product_id'])
         self.assertEqual(new_json['user_id'], result.user_id)
         self.assertEqual(new_json['product_id'], result.product_id)
+
+    def test_create_shopcart_entry_existing_product(self):
+        """ Create a new Shopcart entry - add one more item of existing product """
+
+        # add a same type of product to shopcart of user
+        new_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        data = json.dumps(new_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        #Check the data is correct
+        new_json = json.loads(resp.data)
+        self.assertEqual(new_json['user_id'], 1)
+        self.assertEqual(new_json['product_id'], 1)
+
+        #Check if you can find the entry in database with quantity updated by 1
+        result = Shopcart.find(new_product['user_id'], new_product['product_id'])
+        self.assertEqual(new_json['user_id'], result.user_id)
+        self.assertEqual(new_json['product_id'], result.product_id)
+        self.assertEqual(new_json['quantity'], 2)
 
 
 

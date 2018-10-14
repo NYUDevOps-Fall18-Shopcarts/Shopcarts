@@ -78,7 +78,6 @@ class TestPets(unittest.TestCase):
         """ Find a Shopcart by user_id and product_id """
         Shopcart(user_id=1, product_id=1, quantity=1, price=12.00).save()
         entry = Shopcart(user_id=1, product_id=2, quantity=1, price=15.00)
-        print(entry.user_id, entry.product_id)
         entry.save()
         shopcart = Shopcart.find(entry.user_id, entry.product_id)
         self.assertIsNot(shopcart, None)

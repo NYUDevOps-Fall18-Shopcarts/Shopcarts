@@ -39,7 +39,9 @@ def create_pets():
     #Check if the entry exists, if yes then increase quantity of product
     exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
     if exists:
-        shopcart.quantity = shopcart.quantity + 1
+        exists.quantity = exists.quantity + 1
+        exists.save()
+        shopcart = exists
 
     shopcart.save()
     message = shopcart.serialize()
