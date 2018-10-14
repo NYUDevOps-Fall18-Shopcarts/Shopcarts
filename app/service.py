@@ -21,7 +21,6 @@ def index():
                    description='This service aims at providing users facility to add, remove, modify and list items in their cart.'),\
                    status.HTTP_200_OK
 
-
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
