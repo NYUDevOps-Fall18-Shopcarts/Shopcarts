@@ -52,6 +52,13 @@ class Shopcart(db.Model):
         app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
 
+    def save(self):
+        """
+        Saves a Shopcart to the data store
+        """
+        db.session.add(self)
+        db.session.commit()
+
     def serialize(self):
         """ Serializes a Shopcart entry into a dictionary """
         return {"user_id": self.user_id,
@@ -82,4 +89,4 @@ class Shopcart(db.Model):
     def find(user_id, product_id):
         """ Finds if user <user_id> has product <product_id> by it's ID """
         Shopcart.logger.info('Processing lookup for user id %s and pet id %s ...', user_id, product_id)
-        return Shopcart.query.get(user_id, product_id)
+        return Shopcart.query.get((user_id,product_id))

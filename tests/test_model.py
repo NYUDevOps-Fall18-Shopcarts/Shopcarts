@@ -57,7 +57,7 @@ class TestPets(unittest.TestCase):
         self.assertIn('price', data)
         self.assertEqual(data['price'], 12.00)
 
-    def test_deserialize_a_pet(self):
+    def test_deserialize_a_shopcart_entry(self):
         """ Test deserialization of a Shopcart """
         data = {"user_id": 1, "product_id": 1, "quantity": 1, "price": 12.00}
         shopcart = Shopcart()
@@ -73,6 +73,19 @@ class TestPets(unittest.TestCase):
         data = "this is not a dictionary"
         shopcart = Shopcart()
         self.assertRaises(DataValidationError, shopcart.deserialize, data)
+
+    def test_find_shopcart_entry(self):
+        """ Find a Shopcart by user_id and product_id """
+        Shopcart(user_id=1, product_id=1, quantity=1, price=12.00).save()
+        entry = Shopcart(user_id=1, product_id=2, quantity=1, price=15.00)
+        print(entry.user_id, entry.product_id)
+        entry.save()
+        shopcart = Shopcart.find(entry.user_id, entry.product_id)
+        self.assertIsNot(shopcart, None)
+        self.assertEqual(shopcart.user_id, 1)
+        self.assertEqual(shopcart.product_id, 2)
+        self.assertEqual(shopcart.quantity, 1)
+        self.assertEqual(shopcart.price, 15.00)
 
 ######################################################################
 #   M A I N
