@@ -1,6 +1,6 @@
 import sys
 import logging
-from flask import jsonify
+from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
 
 
@@ -21,6 +21,32 @@ def index():
                    description='This service aims at providing users facility to add, remove, modify and list items in their cart.'),\
                    status.HTTP_200_OK
 
+######################################################################
+# ADD A NEW PRODUCT TO USER'S SHOPCART
+######################################################################
+@app.route('/shopcarts', methods=['POST'])
+def create_pets():
+    """
+    Create a Shopcart entry specific to that user_id and product_id
+    This endpoint will create a Pet based the data in the body that is posted
+    """
+
+    check_content_type('application/json')
+
+    shopcart = Shopcart()
+    shopcart.deserialize(request.get_json())
+
+    #Check if the entry exists, if yes then increase quantity of product
+    exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
+    if exists:
+        exists.quantity = exists.quantity + 1
+        exists.save()
+        shopcart = exists
+
+    shopcart.save()
+    message = shopcart.serialize()
+    #location_url = url_for('get_pets', pet_id=pet.id, _external=True)
+    return make_response(jsonify(message), status.HTTP_201_CREATED)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
@@ -30,6 +56,13 @@ def init_db():
     """ Initialies the SQLAlchemy app """
     global app
     Shopcart.init_db(app)
+
+def check_content_type(content_type):
+    """ Checks that the media type is correct """
+    if request.headers['Content-Type'] == content_type:
+        return
+    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+    abort(415, 'Content-Type must be {}'.format(content_type))
 
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """
