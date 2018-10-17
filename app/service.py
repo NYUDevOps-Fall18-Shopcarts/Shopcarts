@@ -63,23 +63,6 @@ def get_shopcart(user_id):
                    data=results),\
                    status.HTTP_200_OK
 
-###################################################################
-# TEST ADD SHOPCART FUNCTION
-# I just added this to add some item in the database without using web request
-####################################################################
-#@app.route('/shopcarts/add', methods=['POST'])
-#def add_shopcart():
-#     data = {'user_id': 1,
-#             'product_id': 98,
-#             'quantity': 1,
-#             'price': 100
-#     }
-#     shopcart = Shopcart()
-#     shopcart.deserialize(data)
-#     shopcart.save()
-#     message = shopcart.serialize()
-#     print(message)
-
 
 
 
