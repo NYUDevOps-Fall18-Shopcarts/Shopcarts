@@ -64,7 +64,19 @@ def get_shopcart(user_id):
                    status.HTTP_200_OK
 
 
-
+######################################################################
+# DELETE A PRODUCT
+######################################################################
+@app.route('/shopcarts/<int:product_id>', methods=['DELETE'])
+def delete_products(product_id):
+    """
+    Delete a Product
+    This endpoint will delete a Product based the id specified in the path
+    """
+    exists = Shopcart.find(user_id,product_id)
+    if exists:
+        exists.delete()
+    return make_response('', status.HTTP_204_NO_CONTENT)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
