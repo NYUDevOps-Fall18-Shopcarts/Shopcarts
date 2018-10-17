@@ -110,7 +110,7 @@ class TestShopcartServer(unittest.TestCase):
         product.save()
         self.assertEqual(len(new_product.all()), 1)
         # delete the pet and make sure it isn't in the database
-        pet.delete()
+        new_product.delete()
         self.assertEqual(len(new_product.all()), 0)
 
 
