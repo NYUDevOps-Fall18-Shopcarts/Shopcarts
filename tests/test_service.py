@@ -138,6 +138,7 @@ class TestShopcartServer(unittest.TestCase):
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['quantity'], 3)
 
+
     def test_get_shopcart_product_amount(self):
         """ Query amount of a product shopcart by user_id and product_id """
         shopcart = Shopcart.find(1, 1)
