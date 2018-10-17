@@ -1,3 +1,17 @@
+# Copyright 2016, 2017 John J. Rofrano. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Shopcart API Service Test Suite
 
@@ -104,6 +118,25 @@ class TestShopcartServer(unittest.TestCase):
         #self.assertEqual(data['user_id'], 1)
         self.assertTrue(len(resp.data) > 0)
 
+    def test_update_shopcart_quantity(self):
+
+        """ Update a Shopcart quantity """
+        # Add test product in database
+        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # update the test product quantity
+        shopcart = Shopcart.find(1, 1)
+        resp = self.app.get('/shopcarts/{uid}/{pid}/{quantity}'.format(uid = shopcart.user_id, pid = shopcart.product_id, quantity = 3),
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        #Check quantity is updated to 3
+        new_json = json.loads(resp.data)
+        self.assertEqual(new_json['quantity'], 3)
 
 ######################################################################
 #   M A I N
