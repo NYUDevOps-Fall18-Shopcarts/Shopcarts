@@ -15,7 +15,7 @@ import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
-
+import json
 
 from model import Shopcart
 
@@ -75,6 +75,23 @@ def get_shopcart(user_id):
                    description='List of products in Shopcarts of user ',
                    data=results),\
                    status.HTTP_200_OK
+
+@app.route('/shopcarts/<int:user_id>/total', methods=['GET'])
+def get_shopcart_total(user_id):
+    """ Get the total amount of the user's shopcart for user(user_id)
+    """
+    total_amount = 0.0
+    shopcarts = Shopcart.findByUserId(user_id)
+    for shopcart in shopcarts:
+        total_amount = total_amount + shopcart.price
+
+    inlist = [shopcart.serialize() for shopcart in shopcarts]
+    
+    dt = {'products':inlist,
+              'total_price':total_amount}
+
+    results = json.dumps(dt)
+    return make_response(results, status.HTTP_200_OK)
 
 
 ######################################################################
