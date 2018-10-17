@@ -88,5 +88,13 @@ class Shopcart(db.Model):
     @staticmethod
     def find(user_id, product_id):
         """ Finds if user <user_id> has product <product_id> by it's ID """
-        Shopcart.logger.info('Processing lookup for user id %s and pet id %s ...', user_id, product_id)
+        Shopcart.logger.info('Processing lookup for user id %s and product id %s ...', user_id, product_id)
         return Shopcart.query.get((user_id,product_id))
+
+
+
+    @staticmethod
+    def findByUserId(user_id):
+        """ Finds the list of product in the shopcart of user by <user_id> """
+        Shopcart.logger.info('Processing lookup for id %s ...', user_id)
+        return Shopcart.query.filter(Shopcart.user_id == user_id)
