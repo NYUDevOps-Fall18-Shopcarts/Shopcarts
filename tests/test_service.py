@@ -150,6 +150,20 @@ class TestShopcartServer(unittest.TestCase):
         print(ans['data'])
         self.assertEqual(ans['data']['quantity'], shopcart.quantity)
 
+    def test_delete_product(self):
+        """ Delete product in Shopcart """
+        # Add test product in database
+        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Delet the test product
+        shopcart = Shopcart.find(1, 1)
+        resp = self.app.delete('/shopcarts/{uid}/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
 ######################################################################
 #   M A I N
 ######################################################################
