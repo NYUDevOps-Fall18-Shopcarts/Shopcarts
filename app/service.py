@@ -77,6 +77,23 @@ def get_shopcart(user_id):
                    status.HTTP_200_OK
 
 
+######################################################################
+# UPDATE AN EXISTING PRODUCT COUNT IN SHOPCART
+######################################################################
+@app.route('/shopcarts/<int:user_id>/<int:product_id>/<int:quantity>', methods=['GET'])
+def update_shopcart(user_id,product_id,quantity):
+	"""
+	Update a Shopcart entry specific to that user_id and product_id
+	This endpoint will update a Shopcart based the data in the body that is posted
+	"""
+#	check_content_type('application/json')
+	data = {'user_id': user_id,'product_id': product_id,'quantity': quantity,'price': 100.00}
+	shopcart = Shopcart.find(user_id, product_id)
+	if not shopcart:
+		raise NotFound("User with id '{uid}' doesn't have product with id '{pid}' was not found.' in the shopcart ".format(uid = user_id, pid = product_id))
+	shopcart.deserialize(data)
+	shopcart.save()
+	return make_response(jsonify(shopcart.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
