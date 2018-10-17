@@ -49,34 +49,10 @@ Vagrant.configure(2) do |config|
     apt-get update
     apt-get install -y git python-pip python-dev build-essential
     apt-get -y autoremove
-    pip install --upgrade pip
+    python -m pip install --upgrade pip
     # Install app dependencies
     cd /vagrant
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
   SHELL
 
-  ######################################################################
-  # Add Redis docker container
-  ######################################################################
-  config.vm.provision "shell", inline: <<-SHELL
-    # Prepare Redis data share
-    sudo mkdir -p /var/lib/redis/data
-    sudo chown ubuntu:ubuntu /var/lib/redis/data
-  SHELL
-
-  # Add Redis docker container
-  config.vm.provision "docker" do |d|
-    d.pull_images "redis:alpine"
-    d.run "redis:alpine",
-      args: "--restart=always -d --name redis -h redis -p 6379:6379 -v /var/lib/redis/data:/data"
-  end
-
-
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
-  # documentation for more information about their specific syntax and use.
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   apt-get update
-  #   apt-get install -y apache2
-  # SHELL
 end
