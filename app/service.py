@@ -51,20 +51,29 @@ def create_pets():
 
 @app.route('/shopcarts/<int:user_id>', methods=['GET'])
 def get_shopcart(user_id):
-     """ Get the shopcart entry for user (user_id)
+    """ Get the shopcart entry for user (user_id)
      This endpoint will show the list of products in user's shopcart from the database
      """
-     shopcarts = Shopcart.findByUserId(user_id)
-     results = [shopcart.serialize() for shopcart in shopcarts]
-     #    abort(status.HTTP_404_NOT_FOUND, "Shopcart with id '{}' was not found.".format(user_id))
-     return jsonify(name='Shopcarts REST API Service',
+    shopcarts = Shopcart.findByUserId(user_id)
+    results = [shopcart.serialize() for shopcart in shopcarts]
+    #    abort(status.HTTP_404_NOT_FOUND, "Shopcart with id '{}' was not found.".format(user_id))
+    return jsonify(name='Shopcarts REST API Service',
                    version='1.0',
                    description='List of products in Shopcarts of user ',
                    data=results),\
                    status.HTTP_200_OK
 
-
-
+@app.route('/shopcarts/<int:user_id>/product-amount/<int:product_id>', methods=['GET'])
+def get_shopcart_product_amount(user_id, product_id):
+    """Get the amount of product (product_id) in shopcart of user (user_id)
+     This endpoint will show the amount of the specified product in user's shopcart from the database
+    """
+    result = Shopcart.find(user_id, product_id).serialize()
+    return jsonify(name='Shopcarts REST API Service',
+                   version='1.0',
+                   description='amount of a product in Shopcarts of a user ',
+                   data=result),\
+                   status.HTTP_200_OK
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
