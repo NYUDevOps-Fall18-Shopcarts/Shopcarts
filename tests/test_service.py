@@ -106,6 +106,17 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(new_json['product_id'], result.product_id)
         self.assertEqual(new_json['quantity'], 2)
 
+    def test_list_shop_cart_entry_by_user_id(self):
+        """ Query shopcart by user_id """
+        shopcart = Shopcart.findByUserId(1)
+        print(shopcart[0].user_id)
+        resp = self.app.get('/shopcarts/{}'.format(shopcart[0].user_id),
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        #self.assertEqual(len(resp.data), len(shopcart))
+        #self.assertEqual(data['user_id'], 1)
+        self.assertTrue(len(resp.data) > 0)
 
 
 ######################################################################

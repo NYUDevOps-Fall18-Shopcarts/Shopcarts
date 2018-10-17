@@ -61,6 +61,24 @@ def create_pets():
     #location_url = url_for('get_pets', pet_id=pet.id, _external=True)
     return make_response(jsonify(message), status.HTTP_201_CREATED)
 
+
+@app.route('/shopcarts/<int:user_id>', methods=['GET'])
+def get_shopcart(user_id):
+     """ Get the shopcart entry for user (user_id)
+     This endpoint will show the list of products in user's shopcart from the database
+     """
+     shopcarts = Shopcart.findByUserId(user_id)
+     results = [shopcart.serialize() for shopcart in shopcarts]
+     #    abort(status.HTTP_404_NOT_FOUND, "Shopcart with id '{}' was not found.".format(user_id))
+     return jsonify(name='Shopcarts REST API Service',
+                   version='1.0',
+                   description='List of products in Shopcarts of user ',
+                   data=results),\
+                   status.HTTP_200_OK
+
+
+
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
