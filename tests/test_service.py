@@ -159,15 +159,15 @@ class TestShopcartServer(unittest.TestCase):
 
 
     def test_get_shopcart_product_amount(self):
-        """ Query amount of a product shopcart by user_id and product_id """
+        """ Query amount and price of a product shopcart by user_id and product_id """
         shopcart = Shopcart.find(1, 1)
         print('user id = {}, product id = {}, amount = {}'.format(shopcart.user_id, shopcart.product_id, shopcart.quantity))
         resp = self.app.get('/shopcarts/{}/product-amount/{}'.format(shopcart.user_id, shopcart.product_id),
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         ans = json.loads(resp.data)
-        print(ans['data'])
-        self.assertEqual(ans['data']['quantity'], shopcart.quantity)
+        self.assertEqual(ans['quantity'], shopcart.quantity)
+        self.assertEqual(ans['price'], shopcart.price)
 
     def test_delete_product(self):
         """ Delete product in Shopcart """

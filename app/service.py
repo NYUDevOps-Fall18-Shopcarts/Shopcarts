@@ -121,19 +121,15 @@ def update_shopcart(user_id,product_id):
 	return make_response(jsonify(shopcart.serialize()), status.HTTP_200_OK)
 
 ######################################################################
-# QUERY THE QUANTITY OF AN EXISTING PRODUCT IN SHOPCART
+# READ THE INFORMATION OF AN EXISTING PRODUCT IN SHOPCART
 ######################################################################
 @app.route('/shopcarts/<int:user_id>/product-amount/<int:product_id>', methods=['GET'])
 def get_shopcart_product_amount(user_id, product_id):
-    """Get the amount of product (product_id) in shopcart of user (user_id)
-     This endpoint will show the amount of the specified product in user's shopcart from the database
+    """Read the information of an exsiting product (product_id) in shopcart of user (user_id)
+     This endpoint will show the information of the specified product in user's shopcart from the database
     """
     result = Shopcart.find(user_id, product_id).serialize()
-    return jsonify(name='Shopcarts REST API Service',
-                   version='1.0',
-                   description='amount of a product in Shopcarts of a user ',
-                   data=result),\
-                   status.HTTP_200_OK
+    return make_response(jsonify(result),status.HTTP_200_OK)
 
 ######################################################################
 # DELETE A PRODUCT
