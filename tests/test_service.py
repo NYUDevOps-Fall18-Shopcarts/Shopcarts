@@ -168,7 +168,7 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # Fetch info of product
         shopcart = Shopcart.find(10, 1)
-        resp = self.app.get('/shopcarts/{}/products/{}'.format(shopcart.user_id, shopcart.product_id),
+        resp = self.app.get('/shopcarts/{}/product/{}'.format(shopcart.user_id, shopcart.product_id),
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         ans = json.loads(resp.data)
