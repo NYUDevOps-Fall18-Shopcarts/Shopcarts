@@ -125,6 +125,7 @@ class TestShopcartServer(unittest.TestCase):
         total = 0.0
         for shopcart in shopcarts:
              total = total + shopcart.price * shopcart.quantity
+        total = round(total, 2)
         resp = self.app.get('/shopcarts/1/total',
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
