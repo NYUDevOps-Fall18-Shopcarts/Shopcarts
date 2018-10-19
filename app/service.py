@@ -84,10 +84,10 @@ def index():
 # ADD A NEW PRODUCT TO USER'S SHOPCART
 ######################################################################
 @app.route('/shopcarts', methods=['POST'])
-def create_pets():
+def create_shopcart():
     """
     Create a Shopcart entry specific to that user_id and product_id
-    This endpoint will create a Pet based the data in the body that is posted
+    This endpoint will create a shopcart based the data in the body that is posted
     """
 
     check_content_type('application/json')
@@ -136,7 +136,6 @@ def get_shopcart_total(user_id):
     shopcarts = Shopcart.findByUserId(user_id)
     for shopcart in shopcarts:
         total_amount = total_amount + (shopcart.price * shopcart.quantity)
-
     total_amount = round(total_amount, 2)
 
     inlist = [shopcart.serialize() for shopcart in shopcarts]
@@ -166,24 +165,22 @@ def update_shopcart(user_id,product_id):
 	return make_response(jsonify(shopcart.serialize()), status.HTTP_200_OK)
 
 ######################################################################
-# QUERY THE QUANTITY OF AN EXISTING PRODUCT IN SHOPCART
+# READ THE INFORMATION OF AN EXISTING PRODUCT IN SHOPCART
 ######################################################################
-@app.route('/shopcarts/<int:user_id>/product-amount/<int:product_id>', methods=['GET'])
-def get_shopcart_product_amount(user_id, product_id):
-    """Get the amount of product (product_id) in shopcart of user (user_id)
-     This endpoint will show the amount of the specified product in user's shopcart from the database
+@app.route('/shopcarts/<int:user_id>/products/<int:product_id>', methods=['GET'])
+def get_shopcart_product_info(user_id, product_id):
+    """Read the information of an exsiting product (product_id) in shopcart of user (user_id)
+     This endpoint will show the information of the specified product in user's shopcart from the database
     """
-    result = Shopcart.find(user_id, product_id).serialize()
-    return jsonify(name='Shopcarts REST API Service',
-                   version='1.0',
-                   description='amount of a product in Shopcarts of a user ',
-                   data=result),\
-                   status.HTTP_200_OK
+    result = Shopcart.find(user_id, product_id)
+    if not result:
+        raise NotFound("User with id '{uid}' doesn't have product with id '{pid}' was not found.' in the shopcart ".format(uid = user_id, pid = product_id))
+    return make_response(jsonify(result.serialize()),status.HTTP_200_OK)
 
 ######################################################################
 # DELETE A PRODUCT
 ######################################################################
-@app.route('/shopcarts/<int:user_id>/<int:product_id>', methods=['DELETE'])
+@app.route('/shopcarts/<int:user_id>/product/<int:product_id>', methods=['DELETE'])
 def delete_products(user_id, product_id):
     """
     Delete a Product
@@ -212,6 +209,21 @@ def get_users_by_total_cost_of_shopcart():
     result = Shopcart.find_users_by_shopcart_amount(amount);
     return make_response(jsonify(result), status.HTTP_200_OK)
 
+
+######################################################################
+# DELETE ALL PRODUCT OF USER
+######################################################################
+@app.route('/shopcarts/<int:user_id>', methods=['DELETE'])
+def delete_user_products(user_id):
+    """
+    Delete Product of User
+    This endpoint will delete all Product of user based the user_id specified in the path
+    """
+    shopcarts = Shopcart.findByUserId(user_id)
+    if shopcarts:
+        for shopcart in shopcarts:
+            shopcart.delete()
+    return make_response('', status.HTTP_204_NO_CONTENT)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S

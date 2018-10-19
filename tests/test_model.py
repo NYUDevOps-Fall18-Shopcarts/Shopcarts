@@ -56,6 +56,15 @@ class TestPets(unittest.TestCase):
         db.session.remove()
         db.drop_all()
 
+    def test_delete_a_product(self):
+        """ Delete a Product """
+        shopcart = Shopcart(user_id=1, product_id=1, quantity=1, price=12.00)
+        shopcart.save()
+        self.assertEqual(len(Shopcart.all()), 1)
+        # delete the pet and make sure it isn't in the database
+        shopcart.delete()
+        self.assertEqual(len(Shopcart.all()), 0)
+
     def test_serialize_a_shopcart_entry(self):
         """ Test serialization of a Shopcart """
         shopcart = Shopcart(user_id = 1, product_id = 1, quantity = 1, price = 12.00)
@@ -109,23 +118,80 @@ class TestPets(unittest.TestCase):
         result = Shopcart.find_users_by_shopcart_amount(13)
         self.assertEqual(result, [1])
 
-    def test_update_a_shopcart(self):
-        """ Update a Shopcart """
-        shopcart = Shopcart(user_id = 1, product_id = 1, quantity = 1, price = 12.00)
+    def test_create_a_shopcart_entry(self):
+        """ Create a shopcart entry and assert that it exists """
+        shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
+        self.assertTrue(shopcart != None)
+        self.assertEqual(shopcart.user_id, 999)
+        self.assertEqual(shopcart.product_id, 999)
+        self.assertEqual(shopcart.quantity, 999)
+        self.assertEqual(shopcart.price, 999.99)
+
+
+    def test_add_a_shopcart_entry(self):
+        """ Create a shopcart entry and add it to the database """
+        shopcarts = Shopcart.findByUserId(999)
+        before_cnt = (shopcarts.count())
+        #self.assertEqual(shopcarts, [])
+        shopcart = Shopcart(user_id=999, product_id=999, quantity=888, price=999.99)
+        self.assertTrue(shopcarts != None)
+        self.assertEqual(shopcart.user_id, 999)
         shopcart.save()
-        self.assertEqual(shopcart.user_id, 1)
-        self.assertEqual(shopcart.product_id, 1)
+        # Asert that it was assigned an id and shows up in the database
+        shopcarts2 = Shopcart.findByUserId(999)
+        self.assertEqual(shopcarts2.count(), before_cnt+1)
+
+    def test_update_a_shopcart_entry(self):
+        """ Update a Shopcart entry """
+        shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
+        shopcart.save()
+        self.assertEqual(shopcart.user_id, 999)
         # Change it an save it
-        shopcart.quantity = 3
+        shopcart.quantity =888
         shopcart.save()
+        self.assertEqual(shopcart.user_id, 999)
+        self.assertEqual(shopcart.product_id, 999)
         # Fetch it back and make sure the id hasn't changed
         # but the data did change
-        shopcart = Shopcart.find(shopcart.user_id, shopcart.product_id)
-        self.assertIsNot(shopcart, None)
-        self.assertEqual(shopcart.user_id, 1)
-        self.assertEqual(shopcart.product_id, 1)
-        self.assertEqual(shopcart.quantity, 3)
-        self.assertEqual(shopcart.price, 12.00)
+        item = Shopcart.find(999,999)
+        self.assertEqual(item.quantity, 888)
+
+
+    def test_delete_a_shopcart_entry(self):
+        """ Delete a shopcart entry """
+        shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
+        shopcart.save()
+        self.assertEqual(Shopcart.findByUserId(999).count(), 1)
+        # delete the pet and make sure it isn't in the database
+        shopcart.delete()
+        self.assertEqual(Shopcart.findByUserId(999).count(), 0)
+
+
+    def test_findByUserId(self):
+        """ Find shopcart list by user_id """
+        shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
+        shopcart.save()
+
+        shopcarts = Shopcart.findByUserId(999)
+        self.assertIsNot(shopcarts, None)
+        self.assertEqual(shopcarts[0].user_id, shopcart.user_id)
+        self.assertEqual(shopcarts[0].product_id, shopcart.product_id)
+
+
+
+    def test_delete_user_product(self):
+        """ Delete User Products """
+        shopcart = Shopcart(user_id=1, product_id=1, quantity=1, price=12.00)
+        shopcart.save()
+        shopcart = Shopcart(user_id=1, product_id=2, quantity=1, price=12.00)
+        shopcart.save()
+        shopcart = Shopcart(user_id=1, product_id=3, quantity=1, price=12.00)
+        shopcart.save()
+        # delete the pet and make sure it isn't in the database
+        shopcart.delete()
+        shopcarts = Shopcart.findByUserId(1)
+        self.assertIsNot(shopcarts, None)
+
 
 
 ######################################################################

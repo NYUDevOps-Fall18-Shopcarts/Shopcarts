@@ -29,7 +29,7 @@ from mock import MagicMock, patch
 from werkzeug.exceptions import NotFound,BadRequest
 
 from app.model import Shopcart, DataValidationError, db
-import app.service as service
+import app.service as service 
 
 DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///../db/test.db')
 
@@ -127,15 +127,13 @@ class TestShopcartServer(unittest.TestCase):
         for shopcart in shopcarts:
              total = total + shopcart.price * shopcart.quantity
         total = round(total, 2)
-        resp = self.app.get('/shopcarts/1/total',
-                             content_type='application/json')
+        
+        resp = self.app.get('/shopcarts/1/total',        
+                        content_type='application/json')
+        
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(total, new_json['total_price'])
-
-
-
-
 
     def test_update_shopcart_quantity(self):
 
@@ -159,16 +157,23 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(new_json['quantity'], 5)
 
 
-    def test_get_shopcart_product_amount(self):
-        """ Query amount of a product shopcart by user_id and product_id """
-        shopcart = Shopcart.find(1, 1)
-        print('user id = {}, product id = {}, amount = {}'.format(shopcart.user_id, shopcart.product_id, shopcart.quantity))
-        resp = self.app.get('/shopcarts/{}/product-amount/{}'.format(shopcart.user_id, shopcart.product_id),
+    def test_get_shopcart_product_info(self):
+        """ Query quantity and price of a product shopcart by user_id and product_id """
+        # Add test product in database
+        test_product = dict(user_id=10, product_id=1, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Fetch info of product
+        shopcart = Shopcart.find(10, 1)
+        resp = self.app.get('/shopcarts/{}/products/{}'.format(shopcart.user_id, shopcart.product_id),
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         ans = json.loads(resp.data)
-        print(ans['data'])
-        self.assertEqual(ans['data']['quantity'], shopcart.quantity)
+        self.assertEqual(ans['quantity'], shopcart.quantity)
+        self.assertEqual(ans['price'], shopcart.price)
 
     def test_delete_product(self):
         """ Delete product in Shopcart """
@@ -181,8 +186,9 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # Delet the test product
         shopcart = Shopcart.find(1, 1)
-        resp = self.app.delete('/shopcarts/{uid}/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
+        resp = self.app.delete('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
 
     def test_get_users_by_total_cost_of_shopcart(self):
         Shopcart(user_id=3, product_id=1, quantity=5, price=12.00).save()
@@ -198,6 +204,26 @@ class TestShopcartServer(unittest.TestCase):
         resp = self.app.get('/shopcarts/users',
                             content_type='application/json')
         self.assertRaises(NotFound)
+
+    def test_delete_user_product(self):
+        """ Delete products in Shopcart """
+        # Add test products in database
+        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        test_product = dict(user_id=1, product_id=3, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Delet the test products of same user
+        resp = self.app.delete('/shopcarts/{uid}'.format(uid = 1))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+
 
 ######################################################################
 #   M A I N
