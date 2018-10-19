@@ -124,6 +124,17 @@ def delete_products(user_id, product_id):
         shopcart.delete()
     return make_response('', status.HTTP_204_NO_CONTENT)
 
+
+############################################################################
+# QUERY DATABASE FOR SHOPCARTS HAVING PRODUCTS WORTH MORE THAN GIVEN AMOUNT
+###########################################################################
+@app.route('/shopcarts/users', methods=['GET'])
+def get_users_by_total_cost_of_shopcart():
+    amount = request.args.get('amount');
+    result = Shopcart.find_by_shopcart_amount(amount);
+    return make_response(jsonify(result), status.HTTP_200_OK)
+
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
