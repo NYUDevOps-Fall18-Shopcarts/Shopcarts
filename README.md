@@ -1,4 +1,4 @@
-#Travis.CI
+
 [![Build Status](https://travis-ci.org/NYUDevOps-Fall18-Shopcarts/shopcarts.svg?branch=master)](https://travis-ci.org/NYUDevOps-Fall18-Shopcarts/shopcarts)
 
 
