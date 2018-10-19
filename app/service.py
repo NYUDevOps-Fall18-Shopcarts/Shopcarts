@@ -16,6 +16,7 @@ import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
 import json
+from werkzeug.exceptions import NotFound
 
 from model import Shopcart
 
@@ -105,18 +106,17 @@ def get_shopcart_total(user_id):
 ######################################################################
 # UPDATE AN EXISTING PRODUCT COUNT IN SHOPCART
 ######################################################################
-@app.route('/shopcarts/<int:user_id>/<int:product_id>/<int:quantity>', methods=['GET'])
-def update_shopcart(user_id,product_id,quantity):
+@app.route('/shopcarts/<int:user_id>/product/<int:product_id>', methods=['PUT'])
+def update_shopcart(user_id,product_id):
 	"""
 	Update a Shopcart entry specific to that user_id and product_id
 	This endpoint will update a Shopcart based the data in the body that is posted
 	"""
-#	check_content_type('application/json')
-	data = {'user_id': user_id,'product_id': product_id,'quantity': quantity,'price': 100.00}
+	check_content_type('application/json')
 	shopcart = Shopcart.find(user_id, product_id)
 	if not shopcart:
 		raise NotFound("User with id '{uid}' doesn't have product with id '{pid}' was not found.' in the shopcart ".format(uid = user_id, pid = product_id))
-	shopcart.deserialize(data)
+	shopcart.deserialize(request.get_json())
 	shopcart.save()
 	return make_response(jsonify(shopcart.serialize()), status.HTTP_200_OK)
 

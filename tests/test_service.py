@@ -140,7 +140,7 @@ class TestShopcartServer(unittest.TestCase):
 
         """ Update a Shopcart quantity """
         # Add test product in database
-        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        test_product = dict(user_id=1, product_id=1, quantity=5, price=12.00)
         data = json.dumps(test_product)
         resp = self.app.post('/shopcarts',
                              data=data,
@@ -148,13 +148,14 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # update the test product quantity
         shopcart = Shopcart.find(1, 1)
-        resp = self.app.get('/shopcarts/{uid}/{pid}/{quantity}'.format(uid = shopcart.user_id, pid = shopcart.product_id, quantity = 3),
-                             content_type='application/json')
+        resp = self.app.put('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id),
+                            data=data,
+                            content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
         #Check quantity is updated to 3
         new_json = json.loads(resp.data)
-        self.assertEqual(new_json['quantity'], 3)
+        self.assertEqual(new_json['quantity'], 5)
 
 
     def test_get_shopcart_product_amount(self):
