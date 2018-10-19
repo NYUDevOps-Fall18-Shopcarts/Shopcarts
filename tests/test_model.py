@@ -125,33 +125,6 @@ class TestPets(unittest.TestCase):
 
 
 
-    def test_update_a_shopcart_entry(self):
-        """ Update a Shopcart entry """
-        shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
-        shopcart.save()
-        self.assertEqual(shopcart.user_id, 999)
-        # Change it an save it
-        shopcart.quantity =888 
-        shopcart.save()
-        self.assertEqual(shopcart.user_id, 999)
-        self.assertEqual(shopcart.product_id, 999)
-        # Fetch it back and make sure the id hasn't changed
-        # but the data did change
-        item = Shopcart.find(999,999)
-        self.assertEqual(item.quantity, 888)
-
-
-    def test_delete_a_shopcart_entry(self):
-        """ Delete a shopcart entry """
-        shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
-        shopcart.save()
-        self.assertEqual(Shopcart.findByUserId(999).count(), 1)
-
-        # delete the pet and make sure it isn't in the database
-
-        shopcart.delete()
-
-        self.assertEqual(Shopcart.findByUserId(999).count(), 0)
 
     def test_findByUserId(self):
         """ Find shopcart list by user_id """
