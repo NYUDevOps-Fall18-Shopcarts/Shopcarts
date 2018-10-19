@@ -124,7 +124,7 @@ class TestShopcartServer(unittest.TestCase):
         shopcarts = Shopcart.findByUserId(1)
         total = 0.0
         for shopcart in shopcarts:
-             total = total + shopcart.price
+             total = total + shopcart.price * shopcart.quantity
         resp = self.app.get('/shopcarts/1/total',
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
