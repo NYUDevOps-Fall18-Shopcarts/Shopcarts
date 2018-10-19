@@ -183,6 +183,25 @@ class TestShopcartServer(unittest.TestCase):
         resp = self.app.delete('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_delete_user_product(self):
+        """ Delete products in Shopcart """
+        # Add test products in database
+        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        test_product = dict(user_id=1, product_id=3, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Delet the test products of same user
+        resp = self.app.delete('/shopcarts/{uid}'.format(uid = 1))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+
 ######################################################################
 #   M A I N
 ######################################################################

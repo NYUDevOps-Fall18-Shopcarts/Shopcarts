@@ -150,6 +150,21 @@ def delete_products(user_id, product_id):
     return make_response('', status.HTTP_204_NO_CONTENT)
 
 ######################################################################
+# DELETE ALL PRODUCT OF USER
+######################################################################
+@app.route('/shopcarts/<int:user_id>', methods=['DELETE'])
+def delete_user_products(user_id):
+    """
+    Delete Product of User
+    This endpoint will delete all Product of user based the user_id specified in the path
+    """
+    shopcarts = Shopcart.findByUserId(user_id)
+    if shopcarts:
+        for shopcart in shopcarts:
+            shopcart.delete()
+    return make_response('', status.HTTP_204_NO_CONTENT)
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 

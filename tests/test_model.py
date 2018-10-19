@@ -126,6 +126,19 @@ class TestPets(unittest.TestCase):
         self.assertEqual(shopcart.quantity, 3)
         self.assertEqual(shopcart.price, 12.00)
 
+    def test_delete_user_product(self):
+        """ Delete User Products """
+        shopcart = Shopcart(user_id=1, product_id=1, quantity=1, price=12.00)
+        shopcart.save()
+        shopcart = Shopcart(user_id=1, product_id=2, quantity=1, price=12.00)
+        shopcart.save()
+        shopcart = Shopcart(user_id=1, product_id=3, quantity=1, price=12.00)
+        shopcart.save()
+        # delete the pet and make sure it isn't in the database
+        shopcart.delete()
+        shopcarts = Shopcart.findByUserId(1)
+        self.assertIsNot(shopcarts, None)
+
 ######################################################################
 #   M A I N
 ######################################################################
