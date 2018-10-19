@@ -56,6 +56,15 @@ class TestPets(unittest.TestCase):
         db.session.remove()
         db.drop_all()
 
+    def test_delete_a_product(self):
+        """ Delete a Product """
+        shopcart = Shopcart(user_id=1, product_id=1, quantity=1, price=12.00)
+        shopcart.save()
+        self.assertEqual(len(Shopcart.all()), 1)
+        # delete the pet and make sure it isn't in the database
+        shopcart.delete()
+        self.assertEqual(len(Shopcart.all()), 0)
+
     def test_serialize_a_shopcart_entry(self):
         """ Test serialization of a Shopcart """
         shopcart = Shopcart(user_id = 1, product_id = 1, quantity = 1, price = 12.00)
@@ -158,6 +167,38 @@ class TestPets(unittest.TestCase):
         self.assertIsNot(shopcarts, None)
         self.assertEqual(shopcarts[0].user_id, shopcart.user_id)
         self.assertEqual(shopcarts[0].product_id, shopcart.product_id)
+
+
+    def test_update_a_shopcart(self):
+        """ Update a Shopcart """
+        shopcart = Shopcart(user_id = 1, product_id = 1, quantity = 1, price = 12.00)
+        shopcart.save()
+        self.assertEqual(shopcart.user_id, 1)
+        self.assertEqual(shopcart.product_id, 1)
+        # Change it an save it
+        shopcart.quantity = 3
+        shopcart.save()
+        # Fetch it back and make sure the id hasn't changed
+        # but the data did change
+        shopcart = Shopcart.find(shopcart.user_id, shopcart.product_id)
+        self.assertIsNot(shopcart, None)
+        self.assertEqual(shopcart.user_id, 1)
+        self.assertEqual(shopcart.product_id, 1)
+        self.assertEqual(shopcart.quantity, 3)
+        self.assertEqual(shopcart.price, 12.00)
+
+    def test_delete_user_product(self):
+        """ Delete User Products """
+        shopcart = Shopcart(user_id=1, product_id=1, quantity=1, price=12.00)
+        shopcart.save()
+        shopcart = Shopcart(user_id=1, product_id=2, quantity=1, price=12.00)
+        shopcart.save()
+        shopcart = Shopcart(user_id=1, product_id=3, quantity=1, price=12.00)
+        shopcart.save()
+        # delete the pet and make sure it isn't in the database
+        shopcart.delete()
+        shopcarts = Shopcart.findByUserId(1)
+        self.assertIsNot(shopcarts, None)
 
 
 ######################################################################
