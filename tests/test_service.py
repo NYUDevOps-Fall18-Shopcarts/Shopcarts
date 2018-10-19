@@ -161,7 +161,7 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # Delet the test product
         shopcart = Shopcart.find(1, 1)
-        resp = self.app.delete('/shopcarts/{uid}/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
+        resp = self.app.delete('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
 ######################################################################

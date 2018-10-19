@@ -38,7 +38,7 @@ def index():
 # ADD A NEW PRODUCT TO USER'S SHOPCART
 ######################################################################
 @app.route('/shopcarts', methods=['POST'])
-def create_pets():
+def create_shopcart():
     """
     Create a Shopcart entry specific to that user_id and product_id
     This endpoint will create a Pet based the data in the body that is posted
@@ -113,7 +113,7 @@ def get_shopcart_product_amount(user_id, product_id):
 ######################################################################
 # DELETE A PRODUCT
 ######################################################################
-@app.route('/shopcarts/<int:user_id>/<int:product_id>', methods=['DELETE'])
+@app.route('/shopcarts/<int:user_id>/product/<int:product_id>', methods=['DELETE'])
 def delete_products(user_id, product_id):
     """
     Delete a Product
