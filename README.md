@@ -46,8 +46,11 @@ You can now run nosetests to run the tests.It is always better to a follow TDD (
 
 # Table Schema
 user_id = db.Column(db.Integer,primary_key=True)
+
 product_id = db.Column(db.Integer,primary_key=True)
+
 quantity = db.Column(db.Integer)
+
 price = db.Column(db.Float)
 
 #Attributes:
