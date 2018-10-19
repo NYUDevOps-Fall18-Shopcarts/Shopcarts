@@ -111,3 +111,8 @@ class Shopcart(db.Model):
         """ Finds the list of product in the shopcart of user by <user_id> """
         Shopcart.logger.info('Processing lookup for id %s ...', user_id)
         return Shopcart.query.filter(Shopcart.user_id == user_id)
+
+    def delete(self):
+        """ Removes a Shopcart from the data store """
+        db.session.delete(self)
+        db.session.commit()
