@@ -110,6 +110,12 @@ class Shopcart(db.Model):
         Shopcart.logger.info('Processing lookup for user id %s and product id %s ...', user_id, product_id)
         return Shopcart.query.get((user_id,product_id))
 
+    def delete(self):
+        """ Removes a Shopcart item from data store"""
+        db.session.delete(self)
+        db.session.commit()
+
+
 
 
     @staticmethod

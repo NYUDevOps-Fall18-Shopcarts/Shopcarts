@@ -91,7 +91,6 @@ def get_shopcart_total(user_id):
     shopcarts = Shopcart.findByUserId(user_id)
     for shopcart in shopcarts:
         total_amount = total_amount + (shopcart.price * shopcart.quantity)
-
     total_amount = round(total_amount, 2)
 
     inlist = [shopcart.serialize() for shopcart in shopcarts]

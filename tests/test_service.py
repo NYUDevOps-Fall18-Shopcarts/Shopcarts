@@ -126,15 +126,13 @@ class TestShopcartServer(unittest.TestCase):
         for shopcart in shopcarts:
              total = total + shopcart.price * shopcart.quantity
         total = round(total, 2)
-        resp = self.app.get('/shopcarts/1/total',
-                             content_type='application/json')
+        
+        resp = self.app.get('/shopcarts/1/total',        
+                        content_type='application/json')
+        
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(total, new_json['total_price']) 
-
-
-
-
 
     def test_update_shopcart_quantity(self):
 
