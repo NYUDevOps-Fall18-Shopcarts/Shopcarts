@@ -15,12 +15,57 @@ import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
+from werkzeug.exceptions import NotFound,BadRequest
 import json
 
-from model import Shopcart
+from model import Shopcart, DataValidationError
 
 # Import Flask application
 from . import app
+
+
+######################################################################
+# Error Handlers
+######################################################################
+@app.errorhandler(DataValidationError)
+def request_validation_error(error):
+    """ Handles Value Errors from bad data """
+    return bad_request(error)
+
+@app.errorhandler(400)
+def bad_request(error):
+    """ Handles bad reuests with 400_BAD_REQUEST """
+    message = error.message or str(error)
+    app.logger.info(message)
+    return jsonify(status=400, error='Bad Request', message=message), 400
+
+@app.errorhandler(404)
+def not_found(error):
+    """ Handles resources not found with 404_NOT_FOUND """
+    message = error.message or str(error)
+    app.logger.info(message)
+    return jsonify(status=404, error='Not Found', message=message), 404
+
+@app.errorhandler(405)
+def method_not_supported(error):
+    """ Handles unsuppoted HTTP methods with 405_METHOD_NOT_SUPPORTED """
+    message = error.message or str(error)
+    app.logger.info(message)
+    return jsonify(status=405, error='Method not Allowed', message=message), 405
+
+@app.errorhandler(415)
+def mediatype_not_supported(error):
+    """ Handles unsuppoted media requests with 415_UNSUPPORTED_MEDIA_TYPE """
+    message = error.message or str(error)
+    app.logger.info(message)
+    return jsonify(status=415, error='Unsupported media type', message=message), 415
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    """ Handles unexpected server error with 500_SERVER_ERROR """
+    message = error.message or str(error)
+    app.logger.info(message)
+    return jsonify(status=500, error='Internal Server Error', message=message), 500
 
 
 ######################################################################
@@ -94,7 +139,7 @@ def get_shopcart_total(user_id):
     total_amount = round(total_amount, 2)
 
     inlist = [shopcart.serialize() for shopcart in shopcarts]
-    
+
     dt = {'products':inlist,
               'total_price':total_amount}
 
@@ -156,7 +201,15 @@ def delete_products(user_id, product_id):
 @app.route('/shopcarts/users', methods=['GET'])
 def get_users_by_total_cost_of_shopcart():
     amount = request.args.get('amount');
-    result = Shopcart.find_by_shopcart_amount(amount);
+    app.logger.info(type(amount))
+    if amount is None:
+        raise NotFound("Required parameter amount not found")
+    else :
+        try:
+            amount = float(amount)
+        except ValueError:
+            raise BadRequest("Required parameter 'amount' should be a float")
+    result = Shopcart.find_users_by_shopcart_amount(amount);
     return make_response(jsonify(result), status.HTTP_200_OK)
 
 

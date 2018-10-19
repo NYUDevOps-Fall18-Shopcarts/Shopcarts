@@ -113,7 +113,7 @@ class Shopcart(db.Model):
         return Shopcart.query.filter(Shopcart.user_id == user_id)
 
     @staticmethod
-    def find_by_shopcart_amount(amount):
+    def find_users_by_shopcart_amount(amount):
         """ Finds the list of users who have in their shopcarts good worth 'amount' or more """
         results = db.session.query(Shopcart.user_id, label('total_amount', func.sum(Shopcart.price*Shopcart.quantity))).group_by(Shopcart.user_id).all();
         users = []
@@ -121,7 +121,7 @@ class Shopcart(db.Model):
             #Shopcart.logger.info("Result "+ str(result.user_id) +"total_amount " + str(result.total_amount) + str(float(result.total_amount) >= float(amount)))
             if float(result.total_amount) >= float(amount):
                 users.append(result.user_id)
-        
+
         return users
 
     def delete(self):

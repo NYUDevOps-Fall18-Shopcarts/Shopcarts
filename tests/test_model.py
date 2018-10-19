@@ -99,6 +99,15 @@ class TestPets(unittest.TestCase):
         self.assertEqual(shopcart.quantity, 1)
         self.assertEqual(shopcart.price, 15.00)
 
+    def test_find_users_by_shopcart_amount(self):
+        """Find users having goods worth more than specified amount in their shopcarts """
+        Shopcart(user_id=1, product_id=1, quantity=1, price=12.00).save()
+        Shopcart(user_id=1, product_id=2, quantity=1, price=12.00).save()
+        Shopcart(user_id=2, product_id=1, quantity=1, price=12.00).save()
+
+        result = Shopcart.find_users_by_shopcart_amount(13)
+        self.assertEqual(result, [1])
+
 ######################################################################
 #   M A I N
 ######################################################################
