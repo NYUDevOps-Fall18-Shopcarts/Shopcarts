@@ -56,6 +56,15 @@ class TestPets(unittest.TestCase):
         db.session.remove()
         db.drop_all()
 
+    def test_delete_a_product(self):
+        """ Delete a Product """
+        shopcart = Shopcart(user_id=1, product_id=1, quantity=1, price=12.00)
+        shopcart.save()
+        self.assertEqual(len(Shopcart.all()), 1)
+        # delete the pet and make sure it isn't in the database
+        shopcart.delete()
+        self.assertEqual(len(Shopcart.all()), 0)
+
     def test_serialize_a_shopcart_entry(self):
         """ Test serialization of a Shopcart """
         shopcart = Shopcart(user_id = 1, product_id = 1, quantity = 1, price = 12.00)

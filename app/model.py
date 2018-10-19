@@ -65,6 +65,12 @@ class Shopcart(db.Model):
         app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
 
+    @staticmethod
+    def all():
+        """ Returns all of the Shopcarts in the database """
+        Shopcart.logger.info('Processing all Shopcarts')
+        return Shopcart.query.all()
+
     def save(self):
         """
         Saves a Shopcart to the data store
