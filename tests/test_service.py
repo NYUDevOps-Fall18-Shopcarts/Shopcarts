@@ -26,6 +26,7 @@ import json
 import logging
 from flask_api import status    # HTTP Status Codes
 from mock import MagicMock, patch
+from werkzeug.exceptions import NotFound,BadRequest
 
 from app.model import Shopcart, DataValidationError, db
 import app.service as service 
@@ -132,7 +133,7 @@ class TestShopcartServer(unittest.TestCase):
         
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
-        self.assertEqual(total, new_json['total_price']) 
+        self.assertEqual(total, new_json['total_price'])
 
     def test_update_shopcart_quantity(self):
 
@@ -188,6 +189,22 @@ class TestShopcartServer(unittest.TestCase):
         resp = self.app.delete('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
+
+    def test_get_users_by_total_cost_of_shopcart(self):
+        Shopcart(user_id=3, product_id=1, quantity=5, price=12.00).save()
+        resp = self.app.get('/shopcarts/users?amount=60',
+                            content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json.loads(resp.data)), 1)
+
+    def test_get_users_by_total_cost_of_shopcart_bad_request(self):
+        resp = self.app.get('/shopcarts/users?amount="hello"',
+                            content_type='application/json')
+        self.assertRaises(BadRequest)
+        resp = self.app.get('/shopcarts/users',
+                            content_type='application/json')
+        self.assertRaises(NotFound)
+
     def test_delete_user_product(self):
         """ Delete products in Shopcart """
         # Add test products in database
@@ -205,6 +222,7 @@ class TestShopcartServer(unittest.TestCase):
         # Delet the test products of same user
         resp = self.app.delete('/shopcarts/{uid}'.format(uid = 1))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
 
 
 ######################################################################

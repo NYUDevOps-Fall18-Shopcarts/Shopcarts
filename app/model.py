@@ -30,6 +30,8 @@ price(float)       - cost of one item of the Product
 """
 import logging
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
+from sqlalchemy.sql import label
 
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
@@ -110,19 +112,23 @@ class Shopcart(db.Model):
         Shopcart.logger.info('Processing lookup for user id %s and product id %s ...', user_id, product_id)
         return Shopcart.query.get((user_id,product_id))
 
-    def delete(self):
-        """ Removes a Shopcart item from data store"""
-        db.session.delete(self)
-        db.session.commit()
-
-
-
-
     @staticmethod
     def findByUserId(user_id):
         """ Finds the list of product in the shopcart of user by <user_id> """
         Shopcart.logger.info('Processing lookup for id %s ...', user_id)
         return Shopcart.query.filter(Shopcart.user_id == user_id)
+
+    @staticmethod
+    def find_users_by_shopcart_amount(amount):
+        """ Finds the list of users who have in their shopcarts good worth 'amount' or more """
+        results = db.session.query(Shopcart.user_id, label('total_amount', func.sum(Shopcart.price*Shopcart.quantity))).group_by(Shopcart.user_id).all();
+        users = []
+        for result in results:
+            #Shopcart.logger.info("Result "+ str(result.user_id) +"total_amount " + str(result.total_amount) + str(float(result.total_amount) >= float(amount)))
+            if float(result.total_amount) >= float(amount):
+                users.append(result.user_id)
+
+        return users
 
     def delete(self):
         """ Removes a Shopcart from the data store """

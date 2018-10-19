@@ -109,6 +109,15 @@ class TestPets(unittest.TestCase):
         self.assertEqual(shopcart.price, 15.00)
 
 
+    def test_find_users_by_shopcart_amount(self):
+        """Find users having goods worth more than specified amount in their shopcarts """
+        Shopcart(user_id=1, product_id=1, quantity=1, price=12.00).save()
+        Shopcart(user_id=1, product_id=2, quantity=1, price=12.00).save()
+        Shopcart(user_id=2, product_id=1, quantity=1, price=12.00).save()
+
+        result = Shopcart.find_users_by_shopcart_amount(13)
+        self.assertEqual(result, [1])
+
     def test_create_a_shopcart_entry(self):
         """ Create a shopcart entry and assert that it exists """
         shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
@@ -169,23 +178,6 @@ class TestPets(unittest.TestCase):
         self.assertEqual(shopcarts[0].product_id, shopcart.product_id)
 
 
-    def test_update_a_shopcart(self):
-        """ Update a Shopcart """
-        shopcart = Shopcart(user_id = 1, product_id = 1, quantity = 1, price = 12.00)
-        shopcart.save()
-        self.assertEqual(shopcart.user_id, 1)
-        self.assertEqual(shopcart.product_id, 1)
-        # Change it an save it
-        shopcart.quantity = 3
-        shopcart.save()
-        # Fetch it back and make sure the id hasn't changed
-        # but the data did change
-        shopcart = Shopcart.find(shopcart.user_id, shopcart.product_id)
-        self.assertIsNot(shopcart, None)
-        self.assertEqual(shopcart.user_id, 1)
-        self.assertEqual(shopcart.product_id, 1)
-        self.assertEqual(shopcart.quantity, 3)
-        self.assertEqual(shopcart.price, 12.00)
 
     def test_delete_user_product(self):
         """ Delete User Products """
@@ -199,6 +191,7 @@ class TestPets(unittest.TestCase):
         shopcart.delete()
         shopcarts = Shopcart.findByUserId(1)
         self.assertIsNot(shopcarts, None)
+
 
 
 ######################################################################
