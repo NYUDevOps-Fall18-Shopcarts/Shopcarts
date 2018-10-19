@@ -167,7 +167,7 @@ def update_shopcart(user_id,product_id):
 ######################################################################
 # READ THE INFORMATION OF AN EXISTING PRODUCT IN SHOPCART
 ######################################################################
-@app.route('/shopcarts/<int:user_id>/products/<int:product_id>', methods=['GET'])
+@app.route('/shopcarts/<int:user_id>/product/<int:product_id>', methods=['GET'])
 def get_shopcart_product_info(user_id, product_id):
     """Read the information of an exsiting product (product_id) in shopcart of user (user_id)
      This endpoint will show the information of the specified product in user's shopcart from the database
