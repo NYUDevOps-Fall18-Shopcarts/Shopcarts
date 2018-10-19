@@ -15,7 +15,7 @@ import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
-
+import json
 
 from model import Shopcart
 
@@ -61,7 +61,9 @@ def create_pets():
     #location_url = url_for('get_pets', pet_id=pet.id, _external=True)
     return make_response(jsonify(message), status.HTTP_201_CREATED)
 
-
+#################################################################
+# GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
+#################################################################
 @app.route('/shopcarts/<int:user_id>', methods=['GET'])
 def get_shopcart(user_id):
     """ Get the shopcart entry for user (user_id)
@@ -75,6 +77,29 @@ def get_shopcart(user_id):
                    description='List of products in Shopcarts of user ',
                    data=results),\
                    status.HTTP_200_OK
+
+
+##################################################################
+# GET THE TOTAL AMOUNT OF ALL THE PRODUCTS IN SHOPCART
+##################################################################
+@app.route('/shopcarts/<int:user_id>/total', methods=['GET'])
+def get_shopcart_total(user_id):
+    """ Get the total amount of the user's shopcart for user(user_id)
+    """
+    total_amount = 0.0
+    shopcarts = Shopcart.findByUserId(user_id)
+    for shopcart in shopcarts:
+        total_amount = total_amount + (shopcart.price * shopcart.quantity)
+
+    total_amount = round(total_amount, 2)
+
+    inlist = [shopcart.serialize() for shopcart in shopcarts]
+    
+    dt = {'products':inlist,
+              'total_price':total_amount}
+
+    results = json.dumps(dt)
+    return make_response(results, status.HTTP_200_OK)
 
 
 ######################################################################
