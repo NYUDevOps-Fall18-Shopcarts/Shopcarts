@@ -53,21 +53,30 @@ quantity = db.Column(db.Integer)
 
 price = db.Column(db.Float)
 
-#Attributes:
+# Attributes:
 
 product_id (int)    - the product-id of a Product used to uniquely identify it
+
 user_id (int)       - the user-id of the User which uniquely identifies the User
+
 quantity (int)     - number of items User wants to buy of that particular product
+
 price(float)       - cost of one item of the Product
 
-#Paths:
+# Paths:
 
-#
-METHOD/URL	                                                         DESCRIPTION
+# METHOD/URL	                                                         DESCRIPTION
+
 POST/shopcarts	 	                                               Create a record
+
 GET/shopcarts/<int:user_id>		                                  List the product
+
 PUT/shopcarts/<int:user_id>/product/<int:product_id>	        Update the product
+
 GET/shopcarts/<int:user_id>/total		            Get the total amount to be payed
+
 DELETE/shopcarts/<int:user_id>/<int:product_id>		  Delete an item from the cart
+
 DELETE/shopcarts/<int:user_id>	                      Clear shopcart of the user
+
 GET/shopcarts/<int:user_id>/product/<int:product_id>	   Get info of the product
