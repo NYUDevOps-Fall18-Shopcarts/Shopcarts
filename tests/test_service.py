@@ -29,7 +29,7 @@ from mock import MagicMock, patch
 from werkzeug.exceptions import NotFound,BadRequest
 
 from app.model import Shopcart, DataValidationError, db
-import app.service as service 
+import app.service as service
 
 DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///../db/test.db')
 
@@ -67,6 +67,9 @@ class TestShopcartServer(unittest.TestCase):
     def test_create_shopcart_entry_new_product(self):
         """ Create a new Shopcart entry - add new product"""
 
+        #Get number of products in users shopcart
+        product_count = self.get_product_count(2)
+
         # add a new product to shopcart of user
         new_product = dict(user_id=2, product_id=1, quantity=1, price=12.00)
         data = json.dumps(new_product)
@@ -80,32 +83,15 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(new_json['user_id'], 2)
         self.assertEqual(new_json['product_id'], 1)
 
-        #Check if you can find the entry in database
-        result = Shopcart.find(new_product['user_id'], new_product['product_id'])
-        self.assertEqual(new_json['user_id'], result.user_id)
-        self.assertEqual(new_json['product_id'], result.product_id)
+        # check that count has gone up and includes sammy
+        resp = self.app.get('/shopcarts/2')
 
-    def test_create_shopcart_entry_existing_product(self):
-        """ Create a new Shopcart entry - add one more item of existing product """
-
-        # add a same type of product to shopcart of user
-        new_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
-        data = json.dumps(new_product)
-        resp = self.app.post('/shopcarts',
-                             data=data,
-                             content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-
-        #Check the data is correct
-        new_json = json.loads(resp.data)
-        self.assertEqual(new_json['user_id'], 1)
-        self.assertEqual(new_json['product_id'], 1)
-
-        #Check if you can find the entry in database with quantity updated by 1
-        result = Shopcart.find(new_product['user_id'], new_product['product_id'])
-        self.assertEqual(new_json['user_id'], result.user_id)
-        self.assertEqual(new_json['product_id'], result.product_id)
-        self.assertEqual(new_json['quantity'], 2)
+        # print 'resp_data(2): ' + resp.data
+        data = json.loads(resp.data)
+        print(data)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIn(new_json, data)
+        self.assertEqual(len(data), product_count + 1)
 
     def test_list_shop_cart_entry_by_user_id(self):
         """ Query shopcart by user_id """
@@ -127,10 +113,10 @@ class TestShopcartServer(unittest.TestCase):
         for shopcart in shopcarts:
              total = total + shopcart.price * shopcart.quantity
         total = round(total, 2)
-        
-        resp = self.app.get('/shopcarts/1/total',        
+
+        resp = self.app.get('/shopcarts/1/total',
                         content_type='application/json')
-        
+
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(total, new_json['total_price'])
@@ -223,7 +209,16 @@ class TestShopcartServer(unittest.TestCase):
         resp = self.app.delete('/shopcarts/{uid}'.format(uid = 1))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
+######################################################################
+# Utility functions
+######################################################################
 
+    def get_product_count(self, user_id):
+        """ save the current number of pets """
+        resp = self.app.get('/shopcarts/'+str(user_id))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        return len(data)
 
 ######################################################################
 #   M A I N
