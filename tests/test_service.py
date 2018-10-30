@@ -29,7 +29,7 @@ from mock import MagicMock, patch
 from werkzeug.exceptions import NotFound,BadRequest
 
 from app.model import Shopcart, DataValidationError, db
-import app.service as service 
+import app.service as service
 
 DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///../db/test.db')
 
@@ -86,7 +86,7 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(new_json['product_id'], result.product_id)
 
     def test_create_shopcart_entry_existing_product(self):
-        """ Create a new Shopcart entry - add one more item of existing product """
+        """ Create a new Shopcart entry - adding same product again raises an error """
 
         # add a same type of product to shopcart of user
         new_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
@@ -94,18 +94,7 @@ class TestShopcartServer(unittest.TestCase):
         resp = self.app.post('/shopcarts',
                              data=data,
                              content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-
-        #Check the data is correct
-        new_json = json.loads(resp.data)
-        self.assertEqual(new_json['user_id'], 1)
-        self.assertEqual(new_json['product_id'], 1)
-
-        #Check if you can find the entry in database with quantity updated by 1
-        result = Shopcart.find(new_product['user_id'], new_product['product_id'])
-        self.assertEqual(new_json['user_id'], result.user_id)
-        self.assertEqual(new_json['product_id'], result.product_id)
-        self.assertEqual(new_json['quantity'], 2)
+        self.assertRaises(BadRequest)
 
     def test_list_shop_cart_entry_by_user_id(self):
         """ Query shopcart by user_id """
@@ -127,10 +116,10 @@ class TestShopcartServer(unittest.TestCase):
         for shopcart in shopcarts:
              total = total + shopcart.price * shopcart.quantity
         total = round(total, 2)
-        
-        resp = self.app.get('/shopcarts/1/total',        
+
+        resp = self.app.get('/shopcarts/1/total',
                         content_type='application/json')
-        
+
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(total, new_json['total_price'])
@@ -139,14 +128,14 @@ class TestShopcartServer(unittest.TestCase):
 
         """ Update a Shopcart quantity """
         # Add test product in database
-        test_product = dict(user_id=1, product_id=1, quantity=5, price=12.00)
+        test_product = dict(user_id=4, product_id=1, quantity=5, price=12.00)
         data = json.dumps(test_product)
         resp = self.app.post('/shopcarts',
                              data=data,
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # update the test product quantity
-        shopcart = Shopcart.find(1, 1)
+        shopcart = Shopcart.find(4, 1)
         resp = self.app.put('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id),
                             data=data,
                             content_type='application/json')
@@ -178,14 +167,14 @@ class TestShopcartServer(unittest.TestCase):
     def test_delete_product(self):
         """ Delete product in Shopcart """
         # Add test product in database
-        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        test_product = dict(user_id=3, product_id=1, quantity=1, price=12.00)
         data = json.dumps(test_product)
         resp = self.app.post('/shopcarts',
                              data=data,
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # Delet the test product
-        shopcart = Shopcart.find(1, 1)
+        shopcart = Shopcart.find(3, 1)
         resp = self.app.delete('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 

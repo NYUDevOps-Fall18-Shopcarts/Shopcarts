@@ -98,14 +98,12 @@ def create_shopcart():
     #Check if the entry exists, if yes then increase quantity of product
     exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
     if exists:
-        exists.quantity = exists.quantity + 1
-        exists.save()
-        shopcart = exists
+        raise BadRequest("Product already exists in the cart. Please use update functionality to increase quantity of that product.")
 
-    shopcart.save()
-    message = shopcart.serialize()
-    #location_url = url_for('get_pets', pet_id=pet.id, _external=True)
-    return make_response(jsonify(message), status.HTTP_201_CREATED)
+    else :
+        shopcart.save()
+        message = shopcart.serialize()
+        return make_response(jsonify(message), status.HTTP_201_CREATED)
 
 #################################################################
 # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
