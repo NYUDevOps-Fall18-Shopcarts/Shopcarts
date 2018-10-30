@@ -214,7 +214,7 @@ class TestShopcartServer(unittest.TestCase):
 ######################################################################
 
     def get_product_count(self, user_id):
-        """ save the current number of pets """
+        """ save the current number of products in user's shopcart """
         resp = self.app.get('/shopcarts/'+str(user_id))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
