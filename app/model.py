@@ -113,6 +113,12 @@ class Shopcart(db.Model):
         return Shopcart.query.filter(Shopcart.user_id == user_id)
 
     @staticmethod
+    def findByProductId(product_id):
+        """ Finds the list of user in the shopcart of product by <product_id> """
+        Shopcart.logger.info('Processing lookup for id %s ...', product_id)
+        return Shopcart.query.filter(Shopcart.product_id == product_id)
+
+    @staticmethod
     def find_users_by_shopcart_amount(amount):
         """ Finds the list of users who have in their shopcarts good worth 'amount' or more """
         results = db.session.query(Shopcart.user_id, label('total_amount', func.sum(Shopcart.price*Shopcart.quantity))).group_by(Shopcart.user_id).all();

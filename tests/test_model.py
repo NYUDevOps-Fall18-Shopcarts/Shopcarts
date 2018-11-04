@@ -176,7 +176,17 @@ class TestShopcarts(unittest.TestCase):
         self.assertEqual(shopcarts[0].user_id, shopcart.user_id)
         self.assertEqual(shopcarts[0].product_id, shopcart.product_id)
 
+    def test_findByProductId(self):
+        """ Find shopcart list by product_id """
+        shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
+        shopcart.save()
 
+        shopcarts = Shopcart.findByProductId(999)
+        self.assertIsNot(shopcarts, None)
+        self.assertEqual(shopcarts[0].user_id, shopcart.user_id)
+        self.assertEqual(shopcarts[0].product_id, shopcart.product_id)
+        self.assertEqual(shopcarts[0].quantity, shopcart.quantity)
+        self.assertEqual(shopcarts[0].price, shopcart.price)
 
     def test_delete_user_product(self):
         """ Delete User Products """

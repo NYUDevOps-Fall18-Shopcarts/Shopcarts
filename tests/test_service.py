@@ -63,6 +63,35 @@ class TestShopcartServer(unittest.TestCase):
         db.session.remove()
         db.drop_all()
 
+    def test_index(self):
+        """ Test the Home Page """
+        resp = self.app.get('/')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(data['name'], 'Shopcarts REST API Service')
+
+    def test_get_pet_list(self):
+        """ Get a list of Shopcarts """
+        resp = self.app.get('/shopcarts')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 2)
+
+    def test_query_shopcart_list_by_product_id(self):
+        """ Query Shopcarts by Product_id """
+        resp = self.app.get('/shopcarts',
+                            query_string='product_id=2')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        #Check the data is correct
+        new_json = json.loads(resp.data)
+
+        self.assertEqual(len(new_json), 1)
+        query_item = new_json[0]
+        self.assertEqual(query_item['user_id'], 1)
+        self.assertEqual(query_item['product_id'], 2)
+        self.assertEqual(query_item['quantity'], 1)
+        self.assertEqual(query_item['price'], 15.00)
+
     def test_create_shopcart_entry_new_product(self):
         """ Create a new Shopcart entry - add new product"""
 
