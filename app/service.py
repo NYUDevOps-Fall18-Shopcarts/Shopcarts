@@ -128,6 +128,22 @@ def list_shopcarts():
     return make_response(jsonify(results), status.HTTP_200_OK)
 
 #################################################################
+# LIST ALL SHOPCARTS
+#################################################################
+@app.route('/shopcarts', methods=['GET'])
+def list_shopcarts():
+    """ Returns all of the Shopcarts """
+    shopcarts = []
+    product_id = request.args.get('product_id')
+    if product_id:
+        shopcarts = Shopcart.findByProductId(product_id)
+    else:
+        shopcarts = Shopcart.all()
+
+    results = [shopcart.serialize() for shopcart in shopcarts]
+    return make_response(jsonify(results), status.HTTP_200_OK)
+
+#################################################################
 # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
 #################################################################
 @app.route('/shopcarts/<int:user_id>', methods=['GET'])
