@@ -103,7 +103,11 @@ def create_shopcart():
     else :
         shopcart.save()
         message = shopcart.serialize()
-        return make_response(jsonify(message), status.HTTP_201_CREATED)
+        location_url = url_for('get_shopcart_product_info', user_id=shopcart.user_id, product_id=shopcart.product_id ,_external=True)
+        return make_response(jsonify(message), status.HTTP_201_CREATED,
+                         {
+                             'Location': location_url
+                         })
 
 #################################################################
 # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
@@ -116,11 +120,7 @@ def get_shopcart(user_id):
     shopcarts = Shopcart.findByUserId(user_id)
     results = [shopcart.serialize() for shopcart in shopcarts]
     #    abort(status.HTTP_404_NOT_FOUND, "Shopcart with id '{}' was not found.".format(user_id))
-    return jsonify(name='Shopcarts REST API Service',
-                   version='1.0',
-                   description='List of products in Shopcarts of user ',
-                   data=results),\
-                   status.HTTP_200_OK
+    return make_response(jsonify(results), status.HTTP_200_OK)
 
 
 ##################################################################

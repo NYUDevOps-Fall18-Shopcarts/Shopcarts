@@ -67,6 +67,9 @@ class TestShopcartServer(unittest.TestCase):
     def test_create_shopcart_entry_new_product(self):
         """ Create a new Shopcart entry - add new product"""
 
+        #Get number of products in users shopcart
+        product_count = self.get_product_count(2)
+
         # add a new product to shopcart of user
         new_product = dict(user_id=2, product_id=1, quantity=1, price=12.00)
         data = json.dumps(new_product)
@@ -79,11 +82,16 @@ class TestShopcartServer(unittest.TestCase):
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['user_id'], 2)
         self.assertEqual(new_json['product_id'], 1)
+        
+        # check that count has gone up 
+        resp = self.app.get('/shopcarts/2')
 
-        #Check if you can find the entry in database
-        result = Shopcart.find(new_product['user_id'], new_product['product_id'])
-        self.assertEqual(new_json['user_id'], result.user_id)
-        self.assertEqual(new_json['product_id'], result.product_id)
+        # print 'resp_data(2): ' + resp.data
+        data = json.loads(resp.data)
+        print(data)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIn(new_json, data)
+        self.assertEqual(len(data), product_count + 1)
 
     def test_create_shopcart_entry_existing_product(self):
         """ Create a new Shopcart entry - adding same product again raises an error """
@@ -95,7 +103,8 @@ class TestShopcartServer(unittest.TestCase):
                              data=data,
                              content_type='application/json')
         self.assertRaises(BadRequest)
-
+        
+        
     def test_list_shop_cart_entry_by_user_id(self):
         """ Query shopcart by user_id """
         shopcart = Shopcart.findByUserId(1)
@@ -212,7 +221,16 @@ class TestShopcartServer(unittest.TestCase):
         resp = self.app.delete('/shopcarts/{uid}'.format(uid = 1))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
+######################################################################
+# Utility functions
+######################################################################
 
+    def get_product_count(self, user_id):
+        """ save the current number of products in user's shopcart """
+        resp = self.app.get('/shopcarts/'+str(user_id))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        return len(data)
 
 ######################################################################
 #   M A I N
