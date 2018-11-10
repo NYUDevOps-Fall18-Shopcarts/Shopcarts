@@ -12,8 +12,9 @@ applications:
   disk_quota: 1024M
   buildpack: python_buildpack
   command: gunicorn --bind=0.0.0.0:$PORT service:app
+# I made this as commenct as we are not adding the persistent storage yet
 #  services:
-#  - Cloudant
+#  - Cloudant 
   env:
     FLASK_APP : server
     FLASK_DEBUG : false
