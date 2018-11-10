@@ -14,7 +14,6 @@
 
 """
 Test cases for Shopcart Model
-
 Test cases can be run with:
   nosetests
   coverage report -m
