@@ -75,10 +75,11 @@ def internal_server_error(error):
 @app.route('/')
 def index():
     """ Root URL response """
-    return jsonify(name='Shopcarts REST API Service',
-                   version='1.0',
-                   description='This service aims at providing users facility to add, remove, modify and list items in their cart.'),\
-                   status.HTTP_200_OK
+    # return jsonify(name='Shopcarts REST API Service',
+    #                version='1.0',
+    #                description='This service aims at providing users facility to add, remove, modify and list items in their cart.'),\
+    #                status.HTTP_200_OK
+    return app.send_static_file('index.html')
 
 ######################################################################
 # ADD A NEW PRODUCT TO USER'S SHOPCART
@@ -222,6 +223,15 @@ def delete_user_products(user_id):
     if shopcarts:
         for shopcart in shopcarts:
             shopcart.delete()
+    return make_response('', status.HTTP_204_NO_CONTENT)
+
+######################################################################
+# DELETE ALL SHOPCARTS DATA (for testing only)
+######################################################################
+@app.route('/shopcarts/reset', methods=['DELETE'])
+def shopcarts_reset():
+    """ Clears all items from shopcarts for all users from the database """
+    Shopcart.remove_all()
     return make_response('', status.HTTP_204_NO_CONTENT)
 
 ######################################################################
