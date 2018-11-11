@@ -228,6 +228,7 @@ def delete_user_products(user_id):
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
+@app.before_first_request
 def init_db():
     """ Initialies the SQLAlchemy app """
     global app
