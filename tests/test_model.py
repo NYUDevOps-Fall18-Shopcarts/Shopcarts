@@ -31,7 +31,7 @@ DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///../db/test.db')
 #  T E S T   C A S E S
 ######################################################################
 
-class TestPets(unittest.TestCase):
+class TestShopcarts(unittest.TestCase):
 
     """ Test Cases for Shopcarts """
 
@@ -61,7 +61,7 @@ class TestPets(unittest.TestCase):
         shopcart = Shopcart(user_id=1, product_id=1, quantity=1, price=12.00)
         shopcart.save()
         self.assertEqual(len(Shopcart.all()), 1)
-        # delete the pet and make sure it isn't in the database
+        # delete item and make sure it isn't in the database
         shopcart.delete()
         self.assertEqual(len(Shopcart.all()), 0)
 
@@ -162,7 +162,7 @@ class TestPets(unittest.TestCase):
         shopcart = Shopcart(user_id=999, product_id=999, quantity=999, price=999.99)
         shopcart.save()
         self.assertEqual(Shopcart.findByUserId(999).count(), 1)
-        # delete the pet and make sure it isn't in the database
+        # delete item and make sure it isn't in the database
         shopcart.delete()
         self.assertEqual(Shopcart.findByUserId(999).count(), 0)
 
@@ -187,7 +187,7 @@ class TestPets(unittest.TestCase):
         shopcart.save()
         shopcart = Shopcart(user_id=1, product_id=3, quantity=1, price=12.00)
         shopcart.save()
-        # delete the pet and make sure it isn't in the database
+        # delete item and make sure it isn't in the database
         shopcart.delete()
         shopcarts = Shopcart.findByUserId(1)
         self.assertIsNot(shopcarts, None)

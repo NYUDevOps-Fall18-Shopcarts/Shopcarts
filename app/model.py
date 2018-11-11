@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Models for Pet Demo Service
+Models for Shopcart Service
 
 All of the models are stored in this module
 
@@ -57,22 +57,6 @@ class Shopcart(db.Model):
     quantity = db.Column(db.Integer)
     price = db.Column(db.Float)
 
-    @staticmethod
-    def init_db(app):
-        """ Initializes the database session """
-        Shopcart.logger.info('Initializing database')
-        Shopcart.app = app
-        # This is where we initialize SQLAlchemy from the Flask app
-        db.init_app(app)
-        app.app_context().push()
-        db.create_all()  # make our sqlalchemy tables
-
-    @staticmethod
-    def all():
-        """ Returns all of the Shopcarts in the database """
-        Shopcart.logger.info('Processing all Shopcarts')
-        return Shopcart.query.all()
-
     def save(self):
         """
         Saves a Shopcart to the data store
@@ -106,6 +90,16 @@ class Shopcart(db.Model):
                                       'bad or no data')
         return self
 
+
+    def delete(self):
+        """ Removes a Shopcart from the data store """
+        db.session.delete(self)
+        db.session.commit()
+
+######################################################################
+#  F I N D E R   M E T H O D S
+######################################################################
+
     @staticmethod
     def find(user_id, product_id):
         """ Finds if user <user_id> has product <product_id> by it's ID """
@@ -130,7 +124,32 @@ class Shopcart(db.Model):
 
         return users
 
-    def delete(self):
-        """ Removes a Shopcart from the data store """
-        db.session.delete(self)
+
+######################################################################
+#  S T A T I C   D A T A B A S E   M E T H O D S
+######################################################################
+    @staticmethod
+    def remove_all():
+        """ Removes all entries in shopcarts for all users from the database """
+        db.session.query(Shopcart).delete()
         db.session.commit()
+
+
+    @staticmethod
+    def all():
+        """ Returns all of the Shopcarts in the database """
+        Shopcart.logger.info('Processing all Shopcarts')
+        return Shopcart.query.all()
+
+######################################################################
+#  D A T A B A S E   C O N N E C T I O N   M E T H O D S
+######################################################################
+    @staticmethod
+    def init_db(app):
+        """ Initializes the database session """
+        Shopcart.logger.info('Initializing database')
+        Shopcart.app = app
+        # This is where we initialize SQLAlchemy from the Flask app
+        db.init_app(app)
+        app.app_context().push()
+        db.create_all()  # make our sqlalchemy tables
