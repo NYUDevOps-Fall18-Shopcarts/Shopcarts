@@ -1,11 +1,13 @@
 # Dependencies
 Flask==1.0.2
 Flask-API==1.0
+flask-restful==0.3.6
 Flask-SQLAlchemy==2.3.2
 SQLAlchemy==1.2.12
+gunicorn
 
 # Runtime
-gunicorn==19.9.0
+#gunicorn==19.9.0
 honcho==1.0.1
 
 # Code quality
@@ -22,3 +24,4 @@ httpie==0.9.9
 # Code coverage
 coverage==4.5.1
 codecov==2.0.15
+

@@ -27,7 +27,6 @@ import logging
 from flask_api import status    # HTTP Status Codes
 from mock import MagicMock, patch
 from werkzeug.exceptions import NotFound,BadRequest
-
 from app.model import Shopcart, DataValidationError, db
 import app.service as service
 
