@@ -81,4 +81,21 @@ DELETE/shopcarts/<int:user_id>	                            -----                
 
 GET/shopcarts/<int:user_id>/product/<int:product_id>	      -----                                 Get info of the product
 
+# Structure of application
 
+Procfile - Contains the command to run when application starts on Bluemix. It is represented in the form web: <command> where <command> in this sample case is to run the py command and passing in the the server.py script.
+
+requirements.txt - Contains the external python packages that are required by the application. These will be downloaded from the python package index and installed via the python package installer (pip) during the buildpack's compile stage when you execute the cf push command. In this sample case we wish to download the Flask package at version 1.0.2 and Cloudant package at version 2.9.0.
+
+runtime.txt - Controls which python runtime to use. In this case we want to use Python 2.7.14.
+
+README.md - this readme.
+
+manifest.yml - Controls how the app will be deployed in Bluemix and specifies memory and other services like Redis that are needed to be bound to it.
+
+service - the python package that contains fthe applciation. This is implemented as a simple Flask-RESTful application. The routes are defined in the application using the api.add_resource() calls. This application has a / route and a /pets route defined. The application deployed to IBM Cloud needs to listen to the port defined by the VCAP_APP_PORT environment variable as seen here:
+
+port = os.getenv('VCAP_APP_PORT', '5000')
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(port))
+This is the port given to your application so that http requests can be routed to it. If the property is not defined then it falls back to port 5000 allowing you to run this sample application locally.
