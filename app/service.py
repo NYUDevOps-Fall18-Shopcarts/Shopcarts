@@ -117,31 +117,20 @@ def create_shopcart():
 @app.route('/shopcarts', methods=['GET'])
 def list_shopcarts():
     """ Returns all of the Shopcarts """
-    shopcarts = []
-    product_id = request.args.get('product_id')
-    if product_id:
-        shopcarts = Shopcart.findByProductId(product_id)
-    else:
-        shopcarts = Shopcart.all()
-
-    results = [shopcart.serialize() for shopcart in shopcarts]
-    return make_response(jsonify(results), status.HTTP_200_OK)
-
-#################################################################
-# LIST ALL SHOPCARTS
-#################################################################
-@app.route('/shopcarts', methods=['GET'])
-def list_shopcarts():
-    """ Returns all of the Shopcarts """
-    shopcarts = []
-    product_id = request.args.get('product_id')
-    if product_id:
-        shopcarts = Shopcart.findByProductId(product_id)
-    else:
-        shopcarts = Shopcart.all()
-
-    results = [shopcart.serialize() for shopcart in shopcarts]
-    return make_response(jsonify(results), status.HTTP_200_OK)
+    users = Shopcart.list_users();
+    results = ''
+    for user_id in users:
+        inlist = Shopcart.findByUserId(user_id)
+        dt = []
+        for item in inlist:
+            tmp2 = {"product_id":item.product_id,
+                    "price": item.price,
+                    "quantity": item.quantity}
+            dt.append(tmp2)
+        tmp = {"user_id":user_id,
+               "products":dt}
+        results += json.dumps(tmp)
+    return make_response(results, status.HTTP_200_OK)
 
 #################################################################
 # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART

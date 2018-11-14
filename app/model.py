@@ -101,6 +101,15 @@ class Shopcart(db.Model):
 ######################################################################
 
     @staticmethod
+    def list_users():
+        """ List all user in table """
+       # users = (db.session.query(Shopcart.user_id).distinct()).all();
+        users = []
+        for user in db.session.query(Shopcart.user_id).distinct():
+            users.append(user.user_id)
+        return users
+
+    @staticmethod
     def find(user_id, product_id):
         """ Finds if user <user_id> has product <product_id> by it's ID """
         Shopcart.logger.info('Processing lookup for user id %s and product id %s ...', user_id, product_id)
