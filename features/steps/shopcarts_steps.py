@@ -55,13 +55,13 @@ def step_impl(context, button):
     button_id = button.lower() + '-btn'
     context.driver.find_element_by_id(button_id).click()
 
-@when('I set the "{element_name}" to {text_string}')
-def step_impl(context, element_name, text_string):
+@when('I set the "{element_name}" to {int_value}')
+def step_impl(context, element_name, int_value):
     element_id = element_name.lower()
     element_id = element_id.replace(" ","_")
     element = context.driver.find_element_by_id(element_id)
     element.clear()
-    element.send_keys(text_string)
+    element.send_keys(int_value)
 
 @then('I should see the message "{message}"')
 def step_impl(context, message):
@@ -72,3 +72,9 @@ def step_impl(context, message):
         )
     )
     expect(found).to_be(True)
+
+@then('I should see {int_value} in the "{element_name}" field')
+def step_impl(context, int_value, element_name):
+    element_id = element_name.lower()
+    element = context.driver.find_element_by_id(element_id)
+    expect(element.get_attribute('value')).to_equal(int_value)
