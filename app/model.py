@@ -99,6 +99,13 @@ class Shopcart(db.Model):
 ######################################################################
 #  F I N D E R   M E T H O D S
 ######################################################################
+    @staticmethod
+    def list_users():
+        """ List all user in table """
+        users = []
+        for user in db.session.query(Shopcart.user_id).distinct():
+            users.append(user.user_id)
+        return users
 
     @staticmethod
     def find(user_id, product_id):

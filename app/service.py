@@ -113,6 +113,27 @@ def create_shopcart():
                          })
 
 #################################################################
+# GET THE LIST OF THE SHOPCART GROUP BY USER
+#################################################################
+@app.route('/shopcarts', methods=['GET'])
+def list_shopcarts():
+    """ Returns all of the Shopcarts """
+    users = Shopcart.list_users();
+    results = ''
+    for user_id in users:
+        inlist = Shopcart.findByUserId(user_id)
+        dt = []
+        for item in inlist:
+            tmp2 = {"product_id":item.product_id,
+                    "price": item.price,
+                    "quantity": item.quantity}
+            dt.append(tmp2)
+        tmp = {"user_id":user_id,
+               "products":dt}
+        results += json.dumps(tmp)
+    return make_response(results, status.HTTP_200_OK)
+
+#################################################################
 # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
 #################################################################
 @app.route('/shopcarts/<int:user_id>', methods=['GET'])
