@@ -1,29 +1,16 @@
 """
-Package: app
-Package for the application models and services
-This module also sets up the logging to be used with gunicorn
+Microservice module
+
+This module contains the microservice code for
+    service
+    models
 """
-import logging
 from flask import Flask
 
-# Create Flask application
+# Create the Flask aoo
 app = Flask(__name__)
+app.config.from_object('config')
 
-
+# Service needs app so must be placed after app is created
 import service
-
-# We'll just use SQLite here so we don't need an external database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../db/development.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'please, tell nobody... Shhhh'
-app.config['LOGGING_LEVEL'] = logging.INFO
-
-# Set up logging for production
-print 'Setting up logging for {}...'.format(__name__)
-if __name__ != '__main__':
-    gunicorn_logger = logging.getLogger('gunicorn.error')
-    if gunicorn_logger:
-        app.logger.handlers = gunicorn_logger.handlers
-        app.logger.setLevel(gunicorn_logger.level)
-
-app.logger.info('Logging established')
+import model
