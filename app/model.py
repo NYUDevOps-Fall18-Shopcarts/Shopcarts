@@ -59,6 +59,13 @@ class Shopcart(db.Model):
     logger = logging.getLogger(__name__)
     app = None
 
+    def __init__(self, user_id=0, product_id=0, quantity=0, price=0.0):
+        """ Constructor """
+        self.user_id = int(user_id)
+        self.product_id = int(product_id)
+        self.quantity = int(quantity)
+        self.price = float(price)
+
     # Table Schema
     user_id = db.Column(db.Integer,primary_key=True)
     product_id = db.Column(db.Integer,primary_key=True)
@@ -159,4 +166,5 @@ class Shopcart(db.Model):
         Shopcart.app = app
         # This is where we initialize SQLAlchemy from the Flask app
         db.init_app(app)
+        app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
