@@ -60,35 +60,6 @@ shopcart_model = api.model('Shopcart', {
                                 description='Cost of one item of the product')
 })
 
-@app.route('/shopcarts', methods=['POST'])
-def create_shopcart():
-    """
-    Create a Shopcart entry specific to that user_id and product_id
-    This endpoint will create a shopcart based the data in the body that is posted
-    """
-
-    check_content_type('application/json')
-
-    shopcart = Shopcart()
-    shopcart.deserialize(request.get_json())
-    app.logger.info(request.get_json())
-    #Check if the entry exists, if yes then increase quantity of product
-    exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
-    if exists:
-        exists.quantity = exists.quantity + 1
-        exists.save()
-        shopcart = exists
-
-    shopcart.save()
-    message = shopcart.serialize()
-
-    location_url = url_for('get_shopcart_product_info', user_id=shopcart.user_id, product_id=shopcart.product_id ,_external=True)
-    return make_response(jsonify(message), status.HTTP_201_CREATED,
-                         {
-                             'Location': location_url
-                         })
-
-
 ######################################################################
 # Special Error Handlers
 ######################################################################
