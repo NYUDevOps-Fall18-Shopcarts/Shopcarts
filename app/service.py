@@ -15,6 +15,7 @@ import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
+from flask_restplus import Api, Resource, fields
 from werkzeug.exceptions import NotFound,BadRequest
 import json
 from werkzeug.exceptions import NotFound
@@ -23,6 +24,35 @@ from model import Shopcart, DataValidationError
 
 # Import Flask application
 from . import app
+
+
+######################################################################
+# Configure Swagger before initilaizing it
+######################################################################
+
+api = Api(app,
+          version='1.0.0',
+          title='NYU Devops Shopcart REST API Service',
+          description='This is a sample shopcart service server.',
+          doc='/apidocs/'
+          # prefix='/api'
+         )
+
+# This namespace is the start of the path i.e., /pets
+ns = api.namespace('shopcarts', description='Shopcart management operations')
+
+
+#Define the model so that the docs reflect what can be sent
+shopcart_model = api.model('Shopcart', {
+    'user_id' : fields.Integer(required=True,
+                               description = 'The ID for each user'),
+    'product_id' : fields.Integer(required=True,
+                                description = 'The ID for individual product'),
+    'quantity' : fields.Integer(required=True,
+                                description = 'The quantity of the product in the shopcart of a user'),
+    'price' : fields.Integer(required=True,
+                                description = 'The unit price of the product')
+})
 
 
 ######################################################################
@@ -81,6 +111,63 @@ def index():
     #                status.HTTP_200_OK
     return app.send_static_file('index.html')
 
+
+######################################################################
+#  PATH: /shopcarts/{user_id}
+######################################################################
+@ns.route('/<int:user_id>')
+@ns.param('user_id','The User Identifier')
+class ShopcartResource(Resource):
+    """
+    ShopcartResource class
+
+    Allows the manipulation of a shopcart of a user
+    GET /user{id} - Returns the list of the product in shopcart of a user with that user_id
+    DELETE /user{id} - Deletes the list of the product in the shopcart of the user
+    """
+
+        
+    #################################################################
+    # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
+    #################################################################
+    @ns.doc('get_shopcart_list')
+    #@ns.response(404, 'Shopcart not found')
+    @ns.marshal_list_with(shopcart_model)
+    def get(self, user_id):
+       """ Get the shopcart entry for user (user_id)
+       This endpoint will show the list of products in user's shopcart from the database
+       """
+
+       app.logger.info("Request to get the list of the product in a user [%s]'s shopcart", user_id)
+       shopcarts = []
+       shopcarts = Shopcart.findByUserId(user_id)
+       if not shopcarts:
+           raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
+       results = [shopcart.serialize() for shopcart in shopcarts]
+       return results, status.HTTP_200_OK
+
+    ######################################################################
+    # DELETE ALL PRODUCT OF USER
+    ######################################################################
+    @ns.doc('delete_user_shopcart')
+    @ns.response(204, 'User Shopcart deleted')
+    def delete(self, user_id):
+       """
+       Delete Product of User
+       This endpoint will delete all Product of user based the user_id specified in the path
+       """
+
+       app.logger.info('Request to delete a shopcart of user id [%s]', user_id)
+       shopcarts = Shopcart.findByUserId(user_id)
+       if shopcarts:
+          for shopcart in shopcarts:
+              shopcart.delete()
+       return '', status.HTTP_204_NO_CONTENT
+
+
+
+
+
 ######################################################################
 # ADD A NEW PRODUCT TO USER'S SHOPCART
 ######################################################################
@@ -112,18 +199,6 @@ def create_shopcart():
                              'Location': location_url
                          })
 
-#################################################################
-# GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
-#################################################################
-@app.route('/shopcarts/<int:user_id>', methods=['GET'])
-def get_shopcart(user_id):
-    """ Get the shopcart entry for user (user_id)
-     This endpoint will show the list of products in user's shopcart from the database
-     """
-    shopcarts = Shopcart.findByUserId(user_id)
-    results = [shopcart.serialize() for shopcart in shopcarts]
-    #    abort(status.HTTP_404_NOT_FOUND, "Shopcart with id '{}' was not found.".format(user_id))
-    return make_response(jsonify(results), status.HTTP_200_OK)
 
 
 ##################################################################
@@ -211,20 +286,6 @@ def get_users_by_total_cost_of_shopcart():
     return make_response(jsonify(result), status.HTTP_200_OK)
 
 
-######################################################################
-# DELETE ALL PRODUCT OF USER
-######################################################################
-@app.route('/shopcarts/<int:user_id>', methods=['DELETE'])
-def delete_user_products(user_id):
-    """
-    Delete Product of User
-    This endpoint will delete all Product of user based the user_id specified in the path
-    """
-    shopcarts = Shopcart.findByUserId(user_id)
-    if shopcarts:
-        for shopcart in shopcarts:
-            shopcart.delete()
-    return make_response('', status.HTTP_204_NO_CONTENT)
 
 ######################################################################
 # DELETE ALL SHOPCARTS DATA (for testing only)
