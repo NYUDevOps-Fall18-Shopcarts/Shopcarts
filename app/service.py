@@ -60,9 +60,39 @@ shopcart_model = api.model('Shopcart', {
                                 description='Cost of one item of the product')
 })
 
+@app.route('/shopcarts', methods=['POST'])
+def create_shopcart():
+    """
+    Create a Shopcart entry specific to that user_id and product_id
+    This endpoint will create a shopcart based the data in the body that is posted
+    """
+
+    check_content_type('application/json')
+
+    shopcart = Shopcart()
+    shopcart.deserialize(request.get_json())
+    app.logger.info(request.get_json())
+    #Check if the entry exists, if yes then increase quantity of product
+    exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
+    if exists:
+        exists.quantity = exists.quantity + 1
+        exists.save()
+        shopcart = exists
+
+    shopcart.save()
+    message = shopcart.serialize()
+
+    location_url = url_for('get_shopcart_product_info', user_id=shopcart.user_id, product_id=shopcart.product_id ,_external=True)
+    return make_response(jsonify(message), status.HTTP_201_CREATED,
+                         {
+                             'Location': location_url
+                         })
+
+
 ######################################################################
 # Special Error Handlers
 ######################################################################
+
 @api.errorhandler(DatabaseConnectionError)
 def database_connection_error(error):
     """ Handles Database Errors from connection attempts """
@@ -70,47 +100,12 @@ def database_connection_error(error):
     app.logger.critical(message)
     return {'status':500, 'error': 'Server Error', 'message': message}, 500
 
+  
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
     return bad_request(error)
-
-# @api.errorhandler(400)
-# def bad_request(error):
-#     """ Handles bad reuests with 400_BAD_REQUEST """
-#     message = error.message or str(error)
-#     app.logger.info(message)
-#     return {'status':400, 'error': 'Bad Request', 'message': message}, 400
-
-# @api.errorhandler(404)
-# def not_found(error):
-#     """ Handles resources not found with 404_NOT_FOUND """
-#     message = error.message or str(error)
-#     app.logger.info(message)
-#     return {'status':404, 'error': 'BNot Found', 'message': message}, 404
-
-# @api.errorhandler(405)
-# def method_not_supported(error):
-#     """ Handles unsuppoted HTTP methods with 405_METHOD_NOT_SUPPORTED """
-#     message = error.message or str(error)
-#     app.logger.info(message)
-#     return {'status':405, 'error': 'Method not Allowed', 'message': message}, 405
-
-# @api.errorhandler(415)
-# def mediatype_not_supported(error):
-#     """ Handles unsuppoted media requests with 415_UNSUPPORTED_MEDIA_TYPE """
-#     message = error.message or str(error)
-#     app.logger.info(message)
-#     return {'status':415, 'error': 'Unsupported media type', 'message': message}, 415
-
-# @api.errorhandler(500)
-# def internal_server_error(error):
-#     """ Handles unexpected server error with 500_SERVER_ERROR """
-#     message = error.message or str(error)
-#     app.logger.info(message)
-#     return {'status':500, 'error': 'Internal Server Error', 'message': message}, 500
-
-
+  
 ######################################################################
 # GET HEALTH CHECK
 ######################################################################
