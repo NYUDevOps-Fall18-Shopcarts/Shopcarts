@@ -77,13 +77,67 @@ def request_validation_error(error):
     """ Handles Value Errors from bad data """
     return bad_request(error)
   
-######################################################################
+  
 # GET HEALTH CHECK
 ######################################################################
 @app.route('/healthcheck')
 def healthcheck():
     """ Let them know our heart is still beating """
     return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
+  
+  
+  
+######################################################################
+#  PATH: /shopcarts/{user_id}
+######################################################################
+@ns.route('/<int:user_id>')
+@ns.param('user_id','The User Identifier')
+class ShopcartResource(Resource):
+    """
+    ShopcartResource class
+
+    Allows the manipulation of a shopcart of a user
+    GET /user{id} - Returns the list of the product in shopcart of a user with that user_id
+    DELETE /user{id} - Deletes the list of the product in the shopcart of the user
+    """
+
+        
+    #################################################################
+    # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
+    #################################################################
+    @ns.doc('get_shopcart_list')
+    #@ns.response(404, 'Shopcart not found')
+    @ns.marshal_list_with(shopcart_model)
+    def get(self, user_id):
+       """ Get the shopcart entry for user (user_id)
+       This endpoint will show the list of products in user's shopcart from the database
+       """
+
+       app.logger.info("Request to get the list of the product in a user [%s]'s shopcart", user_id)
+       shopcarts = []
+       shopcarts = Shopcart.findByUserId(user_id)
+       if not shopcarts:
+           raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
+       results = [shopcart.serialize() for shopcart in shopcarts]
+       return results, status.HTTP_200_OK
+
+    ######################################################################
+    # DELETE ALL PRODUCT OF USER
+    ######################################################################
+    @ns.doc('delete_user_shopcart')
+    @ns.response(204, 'User Shopcart deleted')
+    def delete(self, user_id):
+       """
+       Delete Product of User
+       This endpoint will delete all Product of user based the user_id specified in the path
+       """
+
+       app.logger.info('Request to delete a shopcart of user id [%s]', user_id)
+       shopcarts = Shopcart.findByUserId(user_id)
+       if shopcarts:
+          for shopcart in shopcarts:
+              shopcart.delete()
+       return '', status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
@@ -200,6 +254,7 @@ class ShopcartCollection(Resource):
         location_url = api.url_for(ProductResource,  user_id=shopcart.user_id, product_id=shopcart.product_id, _external=True)
         return shopcart.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
 
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
@@ -248,4 +303,4 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.setLevel(log_level)
         app.logger.info('Logging handler established')
 
-        
+

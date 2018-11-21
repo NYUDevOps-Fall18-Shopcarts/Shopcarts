@@ -14,7 +14,6 @@
 
 """
 Shopcart API Service Test Suite
-
 Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
   coverage report -m
@@ -106,17 +105,17 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(new_json, data)
         #self.assertEqual(len(data), product_count + 1)
 
-    # def test_list_shop_cart_entry_by_user_id(self):
-    #     """ Query shopcart by user_id """
-    #     shopcart = Shopcart.findByUserId(1)
-    #     print(shopcart[0].user_id)
-    #     resp = self.app.get('/shopcarts/{}'.format(shopcart[0].user_id),
-    #                          content_type='application/json')
-    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
-    #     data = json.loads(resp.data)
-    #     #self.assertEqual(len(resp.data), len(shopcart))
-    #     #self.assertEqual(data['user_id'], 1)
-    #     self.assertTrue(len(resp.data) > 0)
+    def test_list_shop_cart_entry_by_user_id(self):
+        """ Query shopcart by user_id """
+        shopcart = Shopcart.findByUserId(1)
+        print(shopcart[0].user_id)
+        resp = self.app.get('/shopcarts/{}'.format(shopcart[0].user_id),
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        #self.assertEqual(len(resp.data), len(shopcart))
+        #self.assertEqual(data['user_id'], 1)
+        self.assertTrue(len(resp.data) > 0)
 
 
     # def test_shop_cart_amount_by_user_id(self):
@@ -204,23 +203,23 @@ class TestShopcartServer(unittest.TestCase):
     #                         content_type='application/json')
     #     self.assertRaises(NotFound)
 
-    # def test_delete_user_product(self):
-    #     """ Delete products in Shopcart """
-    #     # Add test products in database
-    #     test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
-    #     data = json.dumps(test_product)
-    #     resp = self.app.post('/shopcarts',
-    #                          data=data,
-    #                          content_type='application/json')
-    #     test_product = dict(user_id=1, product_id=3, quantity=1, price=12.00)
-    #     data = json.dumps(test_product)
-    #     resp = self.app.post('/shopcarts',
-    #                          data=data,
-    #                          content_type='application/json')
-    #     self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-    #     # Delet the test products of same user
-    #     resp = self.app.delete('/shopcarts/{uid}'.format(uid = 1))
-    #     self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+    def test_delete_user_product(self):
+        """ Delete products in Shopcart """
+        # Add test products in database
+        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        test_product = dict(user_id=1, product_id=3, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                            data=data,
+                            content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Delet the test products of same user
+        resp = self.app.delete('/shopcarts/{uid}'.format(uid = 1))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
 ######################################################################
 # Utility functions
