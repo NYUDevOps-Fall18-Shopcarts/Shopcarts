@@ -32,13 +32,21 @@ import logging
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from sqlalchemy.sql import label
+from redis import Redis
+from redis.exceptions import ConnectionError
+
+######################################################################
+# Custom Exceptions
+######################################################################
+class DataValidationError(ValueError):
+    pass
+
+class DatabaseConnectionError(ConnectionError):
+    pass
 
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
 
-class DataValidationError(Exception):
-    """ Used for an data validation errors when deserializing """
-    pass
 
 class Shopcart(db.Model):
     """
@@ -50,6 +58,13 @@ class Shopcart(db.Model):
 
     logger = logging.getLogger(__name__)
     app = None
+
+    def __init__(self, user_id=0, product_id=0, quantity=0, price=0.0):
+        """ Constructor """
+        self.user_id = int(user_id)
+        self.product_id = int(product_id)
+        self.quantity = int(quantity)
+        self.price = float(price)
 
     # Table Schema
     user_id = db.Column(db.Integer,primary_key=True)
