@@ -32,6 +32,16 @@ import app.service as service
 
 DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///../db/test.db')
 
+# Status Codes
+HTTP_200_OK = 200
+HTTP_201_CREATED = 201
+HTTP_204_NO_CONTENT = 204
+HTTP_400_BAD_REQUEST = 400
+HTTP_404_NOT_FOUND = 404
+HTTP_405_METHOD_NOT_ALLOWED = 405
+HTTP_409_CONFLICT = 409
+HTTP_415_UNSUPPORTED_MEDIA_TYPE = 415
+
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
@@ -50,25 +60,28 @@ class TestShopcartServer(unittest.TestCase):
     def tearDownClass(cls):
         pass
 
+
     def setUp(self):
-        """ Runs before each test """
-        service.init_db()
-        db.drop_all()    # clean up the last tests
-        db.create_all()  # create new tables
-        Shopcart(user_id=1, product_id=1, quantity=1, price=12.00).save()
-        Shopcart(user_id=1, product_id=2, quantity=1, price=15.00).save()
         self.app = service.app.test_client()
+        service.initialize_logging(logging.CRITICAL)
+        service.init_db()
+        service.data_reset()
+        service.data_load({"user_id": 1, "product_id": 1, "quantity": 1, "price":12.00})
+        service.data_load({"user_id": 1, "product_id": 2, "quantity": 1, "price":15.00})
 
     def tearDown(self):
         db.session.remove()
         db.drop_all()
 
+
+    #Needs to be refactored once get method is up
     def test_create_shopcart_entry_new_product(self):
         """ Create a new Shopcart entry - add new product"""
 
         #Get number of products in users shopcart
-        product_count = self.get_product_count(2)
+        #product_count = self.get_product_count(2)
 
+        product_count = self.get_product_count(2)
         # add a new product to shopcart of user
         new_product = dict(user_id=2, product_id=1, quantity=1, price=12.00)
         data = json.dumps(new_product)
@@ -83,112 +96,27 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(new_json['product_id'], 1)
 
         # check that count has gone up and includes sammy
-        resp = self.app.get('/shopcarts/2')
+        resp = self.app.get('/shopcarts/2/product/1')
 
         # print 'resp_data(2): ' + resp.data
         data = json.loads(resp.data)
         print(data)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertIn(new_json, data)
-        self.assertEqual(len(data), product_count + 1)
+        self.assertEqual(new_json, data)
+        #self.assertEqual(len(data), product_count + 1)
 
-    def test_list_shop_cart_entry_by_user_id(self):
-        """ Query shopcart by user_id """
-        shopcart = Shopcart.findByUserId(1)
-        print(shopcart[0].user_id)
-        resp = self.app.get('/shopcarts/{}'.format(shopcart[0].user_id),
-                             content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = json.loads(resp.data)
-        #self.assertEqual(len(resp.data), len(shopcart))
-        #self.assertEqual(data['user_id'], 1)
-        self.assertTrue(len(resp.data) > 0)
+     def test_list_shop_cart_entry_by_user_id(self):
+         """ Query shopcart by user_id """
+         shopcart = Shopcart.findByUserId(1)
+         print(shopcart[0].user_id)
+         resp = self.app.get('/shopcarts/{}'.format(shopcart[0].user_id),
+                              content_type='application/json')
+         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+         data = json.loads(resp.data)
+         #self.assertEqual(len(resp.data), len(shopcart))
+         #self.assertEqual(data['user_id'], 1)
+         self.assertTrue(len(resp.data) > 0)
 
-
-    def test_shop_cart_amount_by_user_id(self):
-        """ Query the total amount of products in shopcart by user_id"""
-        shopcarts = Shopcart.findByUserId(1)
-        total = 0.0
-        for shopcart in shopcarts:
-             total = total + shopcart.price * shopcart.quantity
-        total = round(total, 2)
-
-        resp = self.app.get('/shopcarts/1/total',
-                        content_type='application/json')
-
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        new_json = json.loads(resp.data)
-        self.assertEqual(total, new_json['total_price'])
-
-    def test_update_shopcart_quantity(self):
-
-        """ Update a Shopcart quantity """
-        # Add test product in database
-        test_product = dict(user_id=1, product_id=1, quantity=5, price=12.00)
-        data = json.dumps(test_product)
-        resp = self.app.post('/shopcarts',
-                             data=data,
-                             content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        # update the test product quantity
-        shopcart = Shopcart.find(1, 1)
-        resp = self.app.put('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id),
-                            data=data,
-                            content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-
-        #Check quantity is updated to 3
-        new_json = json.loads(resp.data)
-        self.assertEqual(new_json['quantity'], 5)
-
-
-    def test_get_shopcart_product_info(self):
-        """ Query quantity and price of a product shopcart by user_id and product_id """
-        # Add test product in database
-        test_product = dict(user_id=10, product_id=1, quantity=1, price=12.00)
-        data = json.dumps(test_product)
-        resp = self.app.post('/shopcarts',
-                             data=data,
-                             content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        # Fetch info of product
-        shopcart = Shopcart.find(10, 1)
-        resp = self.app.get('/shopcarts/{}/product/{}'.format(shopcart.user_id, shopcart.product_id),
-                             content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        ans = json.loads(resp.data)
-        self.assertEqual(ans['quantity'], shopcart.quantity)
-        self.assertEqual(ans['price'], shopcart.price)
-
-    def test_delete_product(self):
-        """ Delete product in Shopcart """
-        # Add test product in database
-        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
-        data = json.dumps(test_product)
-        resp = self.app.post('/shopcarts',
-                             data=data,
-                             content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        # Delet the test product
-        shopcart = Shopcart.find(1, 1)
-        resp = self.app.delete('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id))
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-
-
-    def test_get_users_by_total_cost_of_shopcart(self):
-        Shopcart(user_id=3, product_id=1, quantity=5, price=12.00).save()
-        resp = self.app.get('/shopcarts/users?amount=60',
-                            content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(json.loads(resp.data)), 1)
-
-    def test_get_users_by_total_cost_of_shopcart_bad_request(self):
-        resp = self.app.get('/shopcarts/users?amount="hello"',
-                            content_type='application/json')
-        self.assertRaises(BadRequest)
-        resp = self.app.get('/shopcarts/users',
-                            content_type='application/json')
-        self.assertRaises(NotFound)
 
     def test_delete_user_product(self):
         """ Delete products in Shopcart """
