@@ -105,6 +105,14 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(new_json, data)
         #self.assertEqual(len(data), product_count + 1)
 
+    def test_list_shop_cart(self):
+        """ List shopcart group by user_id """
+        resp = self.app.get('/shopcarts')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(data['user_id'], 1)
+        self.assertEqual(len(data['products']), 2)
+
     def test_list_shop_cart_entry_by_user_id(self):
         """ Query shopcart by user_id """
         shopcart = Shopcart.findByUserId(1)
@@ -118,20 +126,20 @@ class TestShopcartServer(unittest.TestCase):
         self.assertTrue(len(resp.data) > 0)
 
 
-    # def test_shop_cart_amount_by_user_id(self):
-    #     """ Query the total amount of products in shopcart by user_id"""
-    #     shopcarts = Shopcart.findByUserId(1)
-    #     total = 0.0
-    #     for shopcart in shopcarts:
-    #          total = total + shopcart.price * shopcart.quantity
-    #     total = round(total, 2)
+    def test_shop_cart_amount_by_user_id(self):
+        """ Query the total amount of products in shopcart by user_id"""
+        shopcarts = Shopcart.findByUserId(1)
+        total = 0.0
+        for shopcart in shopcarts:
+             total = total + shopcart.price * shopcart.quantity
+        total = round(total, 2)
 
-    #     resp = self.app.get('/shopcarts/1/total',
-    #                     content_type='application/json')
+        resp = self.app.get('/shopcarts/1/total',
+                        content_type='application/json')
 
-    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
-    #     new_json = json.loads(resp.data)
-    #     self.assertEqual(total, new_json['total_price'])
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        new_json = json.loads(resp.data)
+        self.assertEqual(total, new_json['total_price'])
 
     def test_update_shopcart_quantity(self):
 
