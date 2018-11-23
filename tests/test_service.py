@@ -196,20 +196,20 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
 
-    # def test_get_users_by_total_cost_of_shopcart(self):
-    #     Shopcart(user_id=3, product_id=1, quantity=5, price=12.00).save()
-    #     resp = self.app.get('/shopcarts/users?amount=60',
-    #                         content_type='application/json')
-    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(len(json.loads(resp.data)), 1)
+    def test_get_users_by_total_cost_of_shopcart(self):
+        Shopcart(user_id=3, product_id=1, quantity=5, price=12.00).save()
+        resp = self.app.get('/shopcarts/users?amount=60',
+                            content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json.loads(resp.data)), 1)
 
-    # def test_get_users_by_total_cost_of_shopcart_bad_request(self):
-    #     resp = self.app.get('/shopcarts/users?amount="hello"',
-    #                         content_type='application/json')
-    #     self.assertRaises(BadRequest)
-    #     resp = self.app.get('/shopcarts/users',
-    #                         content_type='application/json')
-    #     self.assertRaises(NotFound)
+    def test_get_users_by_total_cost_of_shopcart_bad_request(self):
+        resp = self.app.get('/shopcarts/users?amount="hello"',
+                            content_type='application/json')
+        self.assertRaises(BadRequest)
+        resp = self.app.get('/shopcarts/users',
+                            content_type='application/json')
+        self.assertRaises(NotFound)
 
     def test_delete_user_product(self):
         """ Delete products in Shopcart """
