@@ -15,25 +15,16 @@ import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
-from werkzeug.exceptions import NotFound,BadRequest
+from flask_restplus import Api, Resource, fields
 import json
 from werkzeug.exceptions import NotFound
+from app.model import Shopcart, DataValidationError, DatabaseConnectionError
 
-from model import Shopcart, DataValidationError
+#from model import Shopcart, DataValidationError
 
 # Import Flask application
 from . import app
 
-
-
-import sys
-import logging
-from flask import jsonify, request, json, url_for, make_response, abort
-from flask_api import status    # HTTP Status Codes
-from flask_restplus import Api, Resource, fields
-from werkzeug.exceptions import NotFound
-from app.model import Shopcart, DataValidationError, DatabaseConnectionError
-from . import app
 
 ######################################################################
 # Configure Swagger before initilaizing it
@@ -45,6 +36,7 @@ api = Api(app,
           doc='/apidocs/'
           # prefix='/api'
          )
+
 # This namespace is the start of the path i.e., /pets
 ns = api.namespace('shopcarts', description='Shopcart operations')
 
@@ -84,8 +76,6 @@ def request_validation_error(error):
 def healthcheck():
     """ Let them know our heart is still beating """
     return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
-  
-  
   
 ######################################################################
 #  PATH: /shopcarts/{user_id}
@@ -139,6 +129,44 @@ class ShopcartResource(Resource):
               shopcart.delete()
        return '', status.HTTP_204_NO_CONTENT
 
+##################################################################
+# GET THE TOTAL AMOUNT OF ALL THE PRODUCTS IN SHOPCART
+##################################################################
+@ns.route('/<int:user_id>/total')
+@ns.param('user_id','The User Identifier')
+class ShopcartAction(Resource):
+
+    """
+    ShopcartAction class
+
+    Allows to get the total amount of the user's shopcart for user(user_id)
+    GET /user{id}/total - Returns the total amount of a user with that user_id
+    """
+
+    #################################################################
+    # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
+    #################################################################
+    @ns.doc('get_shopcart_total')
+    #@ns.response(404, 'Shopcart not found')
+    def get(self, user_id):
+       """ Get the shopcart entry for user (user_id)
+       This endpoint will show the list of products in user's shopcart from the database
+       """
+
+       app.logger.info("Request to get the total amount of a user [%s]'s shopcart", user_id)
+       total_amount = 0.0
+       shopcarts = Shopcart.findByUserId(user_id)
+       for shopcart in shopcarts:
+           total_amount = total_amount + (shopcart.price * shopcart.quantity)
+       total_amount = round(total_amount, 2)
+
+       inlist = [shopcart.serialize() for shopcart in shopcarts]
+
+       dt = {'products':inlist,
+             'total_price':total_amount}
+
+       results = json.dumps(dt)
+       return make_response(results, status.HTTP_200_OK)
 
 ######################################################################
 #  PATH: /shopcarts/<int:user_id>/product/<int:product_id>
@@ -222,6 +250,32 @@ class ProductResource(Resource):
 @ns.route('/', strict_slashes=False)
 class ShopcartCollection(Resource):
     
+    """ Handles all interactions with collections of Shopcarts """
+    #------------------------------------------------------------------
+    # LIST ALL SHOPCARTS
+    #------------------------------------------------------------------
+    @ns.doc('list_shopcarts')
+    @ns.param('category', 'List Shopcarts grouped by user_id')
+    def get(self):
+        """ Returns all of the Shopcarts grouped by user_id """
+        app.logger.info('Request to list Shopcarts...')
+
+        users = Shopcart.list_users();
+        results = ''
+        for user_id in users:
+            inlist = Shopcart.findByUserId(user_id)
+            dt = []
+            for item in inlist:
+                tmp2 = {"product_id":item.product_id,
+                        "price": item.price,
+                        "quantity": item.quantity}
+                dt.append(tmp2)
+            tmp = {"user_id":user_id,
+                   "products":dt}
+            results += json.dumps(tmp)
+
+        return make_response(results, status.HTTP_200_OK)
+
     #------------------------------------------------------------------
     # ADD A NEW PRODUCT
     #------------------------------------------------------------------
