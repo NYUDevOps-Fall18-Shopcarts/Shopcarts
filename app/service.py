@@ -334,6 +334,7 @@ class ShopcartUsersResource(Resource):
     # QUERY DATABASE FOR SHOPCARTS HAVING PRODUCTS WORTH MORE THAN GIVEN AMOUNT
     ############################################################################
     @ns.doc('get_users_with_shopcart_more_than_given_amount')
+    @ns.response(400, 'parameter amount not found')
     def get(self):
         """
         Get the shopcart list of users
@@ -354,9 +355,9 @@ class ShopcartUsersResource(Resource):
             except ValueError:
                 app.logger.info("value error")
                 abort(status.HTTP_400_BAD_REQUEST, 'parameter is not valid: {}'.format(amount))
-        shopcarts = Shopcart.find_users_by_shopcart_amount(amount)
+        users = Shopcart.find_users_by_shopcart_amount(amount)
         app.logger.info("get data")
-        return shopcarts, status.HTTP_200_OK
+        return users, status.HTTP_200_OK
 
 
 
