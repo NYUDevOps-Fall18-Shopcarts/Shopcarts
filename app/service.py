@@ -321,7 +321,6 @@ class ShopcartCollection(Resource):
 #  PATH: /shopcarts/users
 ######################################################################
 @ns.route('/users')
-#@ns.param('amount', 'the min value to check the users shopcart list')
 class ShopcartUsersResource(Resource):
     """
     ShopcartUsersResource class
@@ -329,14 +328,12 @@ class ShopcartUsersResource(Resource):
     Allows getting the list of the users whose shopcarts worth more than given amount
     GET /users - Returns the list of the users whose shopcarts' total is more than a certain amount
     """
-    #@api.expect(amount_fields)
     @ns.param('amount', 'amount for searching')
 
     ############################################################################
     # QUERY DATABASE FOR SHOPCARTS HAVING PRODUCTS WORTH MORE THAN GIVEN AMOUNT
     ############################################################################
     @ns.doc('get_users_with_shopcart_more_than_given_amount')
-    #@ns.marshal_list_with(string)
     def get(self):
         """
         Get the shopcart list of users
@@ -357,12 +354,9 @@ class ShopcartUsersResource(Resource):
             except ValueError:
                 app.logger.info("value error")
                 abort(status.HTTP_400_BAD_REQUEST, 'parameter is not valid: {}'.format(amount))
-                #raise BadRequest("Required parameter 'amount' should be a float")
         shopcarts = Shopcart.find_users_by_shopcart_amount(amount)
         app.logger.info("get data")
-        #results = [shopcart.serialize() for shopcart in shopcarts]
         return shopcarts, status.HTTP_200_OK
-
 
 
 
