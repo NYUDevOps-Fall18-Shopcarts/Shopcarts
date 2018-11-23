@@ -345,7 +345,7 @@ class ShopcartUsersResource(Resource):
         
         if amount is None:
             app.logger.info("amount is none")
-            raise NotFound("Required parameter amount not found")
+            abort(status.HTTP_400_BAD_REQUEST, 'parameter amount not found')
         else:
             try:
                 app.logger.info("try start")
