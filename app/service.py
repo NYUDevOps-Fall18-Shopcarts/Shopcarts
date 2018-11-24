@@ -37,6 +37,12 @@ api = Api(app,
           # prefix='/api'
          )
 
+amount_fields = api.model('Resource', {
+    'amount':fields.Integer(required=True,
+                            description='the amount for searching user shopcart')
+    })
+
+
 # This namespace is the start of the path i.e., /pets
 ns = api.namespace('shopcarts', description='Shopcart operations')
 
@@ -68,7 +74,9 @@ def database_connection_error(error):
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
     return bad_request(error)
-  
+
+
+
   
 # GET HEALTH CHECK
 ######################################################################
@@ -307,6 +315,51 @@ class ShopcartCollection(Resource):
         app.logger.info('Item with new id [%s] saved to shopcart of user [%s]!', shopcart.user_id, shopcart.product_id)
         location_url = api.url_for(ProductResource,  user_id=shopcart.user_id, product_id=shopcart.product_id, _external=True)
         return shopcart.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
+
+
+######################################################################
+#  PATH: /shopcarts/users
+######################################################################
+@ns.route('/users')
+class ShopcartUsersResource(Resource):
+    """
+    ShopcartUsersResource class
+
+    Allows getting the list of the users whose shopcarts worth more than given amount
+    GET /users - Returns the list of the users whose shopcarts' total is more than a certain amount
+    """
+    @ns.param('amount', 'amount for searching')
+
+    ############################################################################
+    # QUERY DATABASE FOR SHOPCARTS HAVING PRODUCTS WORTH MORE THAN GIVEN AMOUNT
+    ############################################################################
+    @ns.doc('get_users_with_shopcart_more_than_given_amount')
+    @ns.response(400, 'parameter amount not found')
+    def get(self):
+        """
+        Get the shopcart list of users
+        This endpoint will show the list of the user shopcart list
+        with amount more than given amount
+        """
+        amount = request.args.get('amount');
+        app.logger.info("Request to get the list of the user shopcart having more than {}".format(amount))
+        
+        if amount is None:
+            app.logger.info("amount is none")
+            abort(status.HTTP_400_BAD_REQUEST, 'parameter amount not found')
+        else:
+            try:
+                app.logger.info("try start")
+                amount = float(amount)
+                app.logger.info("try end")
+            except ValueError:
+                app.logger.info("value error")
+                abort(status.HTTP_400_BAD_REQUEST, 'parameter is not valid: {}'.format(amount))
+        users = Shopcart.find_users_by_shopcart_amount(amount)
+        app.logger.info("get data")
+        return users, status.HTTP_200_OK
+
+
 
 
 ######################################################################
