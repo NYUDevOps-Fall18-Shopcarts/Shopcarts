@@ -163,6 +163,7 @@ class Shopcart(db.Model):
         Shopcart.logger.info('Processing all Shopcarts')
         return Shopcart.query.all()
 
+
 ######################################################################
 #  D A T A B A S E   C O N N E C T I O N   M E T H O D S
 ######################################################################
