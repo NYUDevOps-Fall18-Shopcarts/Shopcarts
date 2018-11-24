@@ -76,23 +76,38 @@
 
         <!-- Search Results -->
         <div class="table-responsive col-md-12" id="search_results">
-          <table class="table-striped">
-            <thead>
-            <tr>
-                <th class="col-md-2">Product</th>
-                <th class="col-md-4">Quantity</th>
-                <th class="col-md-3">Price</th>
-            </tr>
-            </thead>
-          </table>
         </div>
+        </div><!--/span-->
+
+        <div class="col-md-12" id="search-form_data" style="padding-top: 50px;">
+          Search for users having goods worth more than or equal to given amount in their shopcarts :
+          <div class="well">
+            <div class="form-horizontal">
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="amount">Amount:</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" id="amount" placeholder="Enter the amount">
+                </div>
+                <div class="col-sm-4">
+                  <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search Results -->
+          <div class="table-responsive col-md-12" id="query_search_results">
+          </div>
+          </div><!--/span-->
+
+        </div>
+
 
         <footer>
           <br><br>
           <br><br>
-          <p>&copy; NYU DevOps Company 2017</p>
+          <p>&copy; NYU DevOps Class 2018</p>
         </footer>
-        </div><!--/span-->
      </div><!--/row-->
 
   </div><!-- container -->
