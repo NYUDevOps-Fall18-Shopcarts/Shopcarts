@@ -27,6 +27,15 @@ from . import app
 
 
 ######################################################################
+# GET INDEX
+######################################################################
+@app.route('/',methods=['GET'])
+def index():
+    """ Root URL response """
+    return app.send_static_file('index.html')
+
+ ######################################################################
+######################################################################
 # Configure Swagger before initilaizing it
 ######################################################################
 api = Api(app,
@@ -54,7 +63,7 @@ shopcart_model = api.model('Shopcart', {
                           description='he unique id of the product'),
     'quantity': fields.Integer(required=True,
                               description='The quantity or number of that particular product we want to add to cart'),
-    'price': fields.Integer(required=True,
+    'price': fields.Float(required=True,
                                 description='Cost of one item of the product')
 })
 
@@ -69,22 +78,22 @@ def database_connection_error(error):
     app.logger.critical(message)
     return {'status':500, 'error': 'Server Error', 'message': message}, 500
 
-  
+
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
     return bad_request(error)
 
-
-
-  
+######################################################################
 # GET HEALTH CHECK
 ######################################################################
 @app.route('/healthcheck')
 def healthcheck():
     """ Let them know our heart is still beating """
     return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
-  
+
+######################################################################
+
 ######################################################################
 #  PATH: /shopcarts/{user_id}
 ######################################################################
@@ -99,7 +108,7 @@ class ShopcartResource(Resource):
     DELETE /user{id} - Deletes the list of the product in the shopcart of the user
     """
 
-        
+
     #################################################################
     # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
     #################################################################
@@ -190,14 +199,14 @@ class ProductResource(Resource):
     DELETE /user{id}/product/product{id} -  Deletes given product from given user's shopcart
     """
     #------------------------------------------------------------------
-    # RETRIEVES A PRODUCT FROM USER'S SHOPCART 
+    # RETRIEVES A PRODUCT FROM USER'S SHOPCART
     #------------------------------------------------------------------
     @ns.doc('get_product')
     @ns.response(404, 'Product not found')
     @ns.marshal_with(shopcart_model)
     def get(self, user_id, product_id):
         """
-        Retrieve a product from user's shopcart 
+        Retrieve a product from user's shopcart
 
         This endpoint will return a product having given product_id from user having given user_id
         """
@@ -243,7 +252,7 @@ class ProductResource(Resource):
         shopcart = Shopcart.find(user_id, product_id)
         if not shopcart:
             raise NotFound("User with id '{uid}' doesn't have product with id '{pid}' was not found.' in the shopcart ".format(uid = user_id, pid = product_id))
-        
+
         data = api.payload
         app.logger.info(data)
         shopcart.deserialize(data)
@@ -257,7 +266,7 @@ class ProductResource(Resource):
 ######################################################################
 @ns.route('/', strict_slashes=False)
 class ShopcartCollection(Resource):
-    
+
     """ Handles all interactions with collections of Shopcarts """
     #------------------------------------------------------------------
     # LIST ALL SHOPCARTS
@@ -343,7 +352,7 @@ class ShopcartUsersResource(Resource):
         """
         amount = request.args.get('amount');
         app.logger.info("Request to get the list of the user shopcart having more than {}".format(amount))
-        
+
         if amount is None:
             app.logger.info("amount is none")
             abort(status.HTTP_400_BAD_REQUEST, 'parameter amount not found')
@@ -360,6 +369,14 @@ class ShopcartUsersResource(Resource):
         return users, status.HTTP_200_OK
 
 
+#####################################################################
+# DELETE ALL SHOPCARTS DATA (for testing only)
+######################################################################
+@app.route('/shopcarts/reset', methods=['DELETE'])
+def shopcarts_reset():
+    """ Clears all items from shopcarts for all users from the database """
+    Shopcart.remove_all()
+    return '', status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
@@ -409,5 +426,3 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.addHandler(handler)
         app.logger.setLevel(log_level)
         app.logger.info('Logging handler established')
-
-
