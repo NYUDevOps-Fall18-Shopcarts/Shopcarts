@@ -80,3 +80,15 @@ def step_impl(context, int_value, element_name):
     element_id = element_name.lower()
     element = context.driver.find_element_by_id(element_id)
     expect(element.get_attribute('value')).to_equal(int_value)
+
+@then('I should see {value} in the results')
+def step_impl(context, value):
+    element = context.driver.find_element_by_id('search_results')
+    expect(element.text).to_contain(value)
+
+@then('I should not see {value} in the results')
+def step_impl(context, value):
+    element = context.driver.find_element_by_id('search_results')
+    #expect(element.text).to_contain(value)
+    error_msg = "I should not see '%s' in '%s'" % (value, element.text)
+    ensure(value in element.text, False, error_msg)
