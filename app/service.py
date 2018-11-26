@@ -18,9 +18,8 @@ from flask_api import status    # HTTP Status Codes
 from flask_restplus import Api, Resource, fields
 import json
 from werkzeug.exceptions import NotFound
-from app.model import Shopcart, DataValidationError, DatabaseConnectionError
 
-#from model import Shopcart, DataValidationError
+from model import Shopcart, DataValidationError, DatabaseConnectionError
 
 # Import Flask application
 from . import app
