@@ -9,7 +9,7 @@ $(function () {
         $("#product_id").val(res.product_id);
         $("#user_id").val(res.user_id);
         $("#quantity").val(res.quantity);
-        $("#price").val(res.price);
+        $("#price").val((res.price).toFixed(2)); //Rounding to 2 decimal places so that we can compare value of price in scenarios
     }
 
     /// Clears all form fields
