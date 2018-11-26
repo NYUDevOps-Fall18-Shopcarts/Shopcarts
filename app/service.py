@@ -15,224 +15,352 @@ import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
-from werkzeug.exceptions import NotFound,BadRequest
+from flask_restplus import Api, Resource, fields
 import json
 from werkzeug.exceptions import NotFound
+from app.model import Shopcart, DataValidationError, DatabaseConnectionError
 
-from model import Shopcart, DataValidationError
+#from model import Shopcart, DataValidationError
 
 # Import Flask application
 from . import app
 
 
 ######################################################################
-# Error Handlers
+# Configure Swagger before initilaizing it
 ######################################################################
-@app.errorhandler(DataValidationError)
+api = Api(app,
+          version='1.0.0',
+          title='Shopcarts REST API Service',
+          description='This service aims at providing users facility to add, remove, modify and list items in their cart.',
+          doc='/apidocs/'
+          # prefix='/api'
+         )
+
+amount_fields = api.model('Resource', {
+    'amount':fields.Integer(required=True,
+                            description='the amount for searching user shopcart')
+    })
+
+
+# This namespace is the start of the path i.e., /pets
+ns = api.namespace('shopcarts', description='Shopcart operations')
+
+# Define the model so that the docs reflect what can be sent
+shopcart_model = api.model('Shopcart', {
+    'user_id': fields.Integer(readOnly=True,
+                         description='The unique id of the user'),
+    'product_id': fields.Integer(required=True,
+                          description='he unique id of the product'),
+    'quantity': fields.Integer(required=True,
+                              description='The quantity or number of that particular product we want to add to cart'),
+    'price': fields.Integer(required=True,
+                                description='Cost of one item of the product')
+})
+
+######################################################################
+# Special Error Handlers
+######################################################################
+
+@api.errorhandler(DatabaseConnectionError)
+def database_connection_error(error):
+    """ Handles Database Errors from connection attempts """
+    message = error.message or str(error)
+    app.logger.critical(message)
+    return {'status':500, 'error': 'Server Error', 'message': message}, 500
+
+  
+@api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
     return bad_request(error)
 
-@app.errorhandler(400)
-def bad_request(error):
-    """ Handles bad reuests with 400_BAD_REQUEST """
-    message = error.message or str(error)
-    app.logger.info(message)
-    return jsonify(status=400, error='Bad Request', message=message), 400
-
-@app.errorhandler(404)
-def not_found(error):
-    """ Handles resources not found with 404_NOT_FOUND """
-    message = error.message or str(error)
-    app.logger.info(message)
-    return jsonify(status=404, error='Not Found', message=message), 404
-
-@app.errorhandler(405)
-def method_not_supported(error):
-    """ Handles unsuppoted HTTP methods with 405_METHOD_NOT_SUPPORTED """
-    message = error.message or str(error)
-    app.logger.info(message)
-    return jsonify(status=405, error='Method not Allowed', message=message), 405
-
-@app.errorhandler(415)
-def mediatype_not_supported(error):
-    """ Handles unsuppoted media requests with 415_UNSUPPORTED_MEDIA_TYPE """
-    message = error.message or str(error)
-    app.logger.info(message)
-    return jsonify(status=415, error='Unsupported media type', message=message), 415
-
-@app.errorhandler(500)
-def internal_server_error(error):
-    """ Handles unexpected server error with 500_SERVER_ERROR """
-    message = error.message or str(error)
-    app.logger.info(message)
-    return jsonify(status=500, error='Internal Server Error', message=message), 500
 
 
+  
+# GET HEALTH CHECK
 ######################################################################
-# GET INDEX
+@app.route('/healthcheck')
+def healthcheck():
+    """ Let them know our heart is still beating """
+    return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
+  
 ######################################################################
-@app.route('/')
-def index():
-    """ Root URL response """
-    # return jsonify(name='Shopcarts REST API Service',
-    #                version='1.0',
-    #                description='This service aims at providing users facility to add, remove, modify and list items in their cart.'),\
-    #                status.HTTP_200_OK
-    return app.send_static_file('index.html')
-
+#  PATH: /shopcarts/{user_id}
 ######################################################################
-# ADD A NEW PRODUCT TO USER'S SHOPCART
-######################################################################
-@app.route('/shopcarts', methods=['POST'])
-def create_shopcart():
+@ns.route('/<int:user_id>')
+@ns.param('user_id','The User Identifier')
+class ShopcartResource(Resource):
     """
-    Create a Shopcart entry specific to that user_id and product_id
-    This endpoint will create a shopcart based the data in the body that is posted
+    ShopcartResource class
+
+    Allows the manipulation of a shopcart of a user
+    GET /user{id} - Returns the list of the product in shopcart of a user with that user_id
+    DELETE /user{id} - Deletes the list of the product in the shopcart of the user
     """
 
-    check_content_type('application/json')
+        
+    #################################################################
+    # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
+    #################################################################
+    @ns.doc('get_shopcart_list')
+    #@ns.response(404, 'Shopcart not found')
+    @ns.marshal_list_with(shopcart_model)
+    def get(self, user_id):
+       """ Get the shopcart entry for user (user_id)
+       This endpoint will show the list of products in user's shopcart from the database
+       """
 
-    shopcart = Shopcart()
-    shopcart.deserialize(request.get_json())
+       app.logger.info("Request to get the list of the product in a user [%s]'s shopcart", user_id)
+       shopcarts = []
+       shopcarts = Shopcart.findByUserId(user_id)
+       if not shopcarts:
+           raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
+       results = [shopcart.serialize() for shopcart in shopcarts]
+       return results, status.HTTP_200_OK
 
-    #Check if the entry exists, if yes then increase quantity of product
-    exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
-    if exists:
-        exists.quantity = exists.quantity + 1
-        exists.save()
-        shopcart = exists
+    ######################################################################
+    # DELETE ALL PRODUCT OF USER
+    ######################################################################
+    @ns.doc('delete_user_shopcart')
+    @ns.response(204, 'User Shopcart deleted')
+    def delete(self, user_id):
+       """
+       Delete Product of User
+       This endpoint will delete all Product of user based the user_id specified in the path
+       """
 
-    shopcart.save()
-    message = shopcart.serialize()
-    location_url = url_for('get_shopcart_product_info', user_id=shopcart.user_id, product_id=shopcart.product_id ,_external=True)
-    return make_response(jsonify(message), status.HTTP_201_CREATED,
-                         {
-                             'Location': location_url
-                         })
-
-#################################################################
-# GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
-#################################################################
-@app.route('/shopcarts/<int:user_id>', methods=['GET'])
-def get_shopcart(user_id):
-    """ Get the shopcart entry for user (user_id)
-     This endpoint will show the list of products in user's shopcart from the database
-     """
-    shopcarts = Shopcart.findByUserId(user_id)
-    results = [shopcart.serialize() for shopcart in shopcarts]
-    #    abort(status.HTTP_404_NOT_FOUND, "Shopcart with id '{}' was not found.".format(user_id))
-    return make_response(jsonify(results), status.HTTP_200_OK)
-
+       app.logger.info('Request to delete a shopcart of user id [%s]', user_id)
+       shopcarts = Shopcart.findByUserId(user_id)
+       if shopcarts:
+          for shopcart in shopcarts:
+              shopcart.delete()
+       return '', status.HTTP_204_NO_CONTENT
 
 ##################################################################
 # GET THE TOTAL AMOUNT OF ALL THE PRODUCTS IN SHOPCART
 ##################################################################
-@app.route('/shopcarts/<int:user_id>/total', methods=['GET'])
-def get_shopcart_total(user_id):
-    """ Get the total amount of the user's shopcart for user(user_id)
+@ns.route('/<int:user_id>/total')
+@ns.param('user_id','The User Identifier')
+class ShopcartAction(Resource):
+
     """
-    total_amount = 0.0
-    shopcarts = Shopcart.findByUserId(user_id)
-    for shopcart in shopcarts:
-        total_amount = total_amount + (shopcart.price * shopcart.quantity)
-    total_amount = round(total_amount, 2)
+    ShopcartAction class
 
-    inlist = [shopcart.serialize() for shopcart in shopcarts]
-
-    dt = {'products':inlist,
-              'total_price':total_amount}
-
-    results = json.dumps(dt)
-    return make_response(results, status.HTTP_200_OK)
-
-
-######################################################################
-# UPDATE AN EXISTING PRODUCT COUNT IN SHOPCART
-######################################################################
-@app.route('/shopcarts/<int:user_id>/product/<int:product_id>', methods=['PUT'])
-def update_shopcart(user_id,product_id):
-	"""
-	Update a Shopcart entry specific to that user_id and product_id
-	This endpoint will update a Shopcart based the data in the body that is posted
-	"""
-	check_content_type('application/json')
-	shopcart = Shopcart.find(user_id, product_id)
-	if not shopcart:
-		raise NotFound("User with id '{uid}' doesn't have product with id '{pid}' was not found.' in the shopcart ".format(uid = user_id, pid = product_id))
-	shopcart.deserialize(request.get_json())
-	shopcart.save()
-	return make_response(jsonify(shopcart.serialize()), status.HTTP_200_OK)
-
-######################################################################
-# READ THE INFORMATION OF AN EXISTING PRODUCT IN SHOPCART
-######################################################################
-@app.route('/shopcarts/<int:user_id>/product/<int:product_id>', methods=['GET'])
-def get_shopcart_product_info(user_id, product_id):
-    """Read the information of an exsiting product (product_id) in shopcart of user (user_id)
-     This endpoint will show the information of the specified product in user's shopcart from the database
+    Allows to get the total amount of the user's shopcart for user(user_id)
+    GET /user{id}/total - Returns the total amount of a user with that user_id
     """
-    result = Shopcart.find(user_id, product_id)
-    if not result:
-        raise NotFound("User with id '{uid}' doesn't have product with id '{pid}' was not found.' in the shopcart ".format(uid = user_id, pid = product_id))
-    return make_response(jsonify(result.serialize()),status.HTTP_200_OK)
+
+    #################################################################
+    # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
+    #################################################################
+    @ns.doc('get_shopcart_total')
+    #@ns.response(404, 'Shopcart not found')
+    def get(self, user_id):
+       """ Get the shopcart entry for user (user_id)
+       This endpoint will show the list of products in user's shopcart from the database
+       """
+
+       app.logger.info("Request to get the total amount of a user [%s]'s shopcart", user_id)
+       total_amount = 0.0
+       shopcarts = Shopcart.findByUserId(user_id)
+       for shopcart in shopcarts:
+           total_amount = total_amount + (shopcart.price * shopcart.quantity)
+       total_amount = round(total_amount, 2)
+
+       inlist = [shopcart.serialize() for shopcart in shopcarts]
+
+       dt = {'products':inlist,
+             'total_price':total_amount}
+
+       results = json.dumps(dt)
+       return make_response(results, status.HTTP_200_OK)
 
 ######################################################################
-# DELETE A PRODUCT
+#  PATH: /shopcarts/<int:user_id>/product/<int:product_id>
 ######################################################################
-@app.route('/shopcarts/<int:user_id>/product/<int:product_id>', methods=['DELETE'])
-def delete_products(user_id, product_id):
-    """
-    Delete a Product
-    This endpoint will delete a Product based the id specified in the path
-    """
-    shopcart = Shopcart.find(user_id, product_id)
-    if shopcart:
-        shopcart.delete()
-    return make_response('', status.HTTP_204_NO_CONTENT)
+@ns.route('/<int:user_id>/product/<int:product_id>', strict_slashes=False)
+class ProductResource(Resource):
 
-
-############################################################################
-# QUERY DATABASE FOR SHOPCARTS HAVING PRODUCTS WORTH MORE THAN GIVEN AMOUNT
-###########################################################################
-@app.route('/shopcarts/users', methods=['GET'])
-def get_users_by_total_cost_of_shopcart():
-    amount = request.args.get('amount');
-    app.logger.info(type(amount))
-    if amount is None:
-        raise NotFound("Required parameter amount not found")
-    else :
-        try:
-            amount = float(amount)
-        except ValueError:
-            raise BadRequest("Required parameter 'amount' should be a float")
-    result = Shopcart.find_users_by_shopcart_amount(amount);
-    return make_response(jsonify(result), status.HTTP_200_OK)
-
-
-######################################################################
-# DELETE ALL PRODUCT OF USER
-######################################################################
-@app.route('/shopcarts/<int:user_id>', methods=['DELETE'])
-def delete_user_products(user_id):
     """
-    Delete Product of User
-    This endpoint will delete all Product of user based the user_id specified in the path
+    ProductResource class
+
+    Allows the manipulation of products in user's a Shopcart
+    GET /user{id}/product/product{id} - Retrieves given product from given user's shopcart
+    DELETE /user{id}/product/product{id} -  Deletes given product from given user's shopcart
     """
-    shopcarts = Shopcart.findByUserId(user_id)
-    if shopcarts:
-        for shopcart in shopcarts:
+    #------------------------------------------------------------------
+    # RETRIEVES A PRODUCT FROM USER'S SHOPCART 
+    #------------------------------------------------------------------
+    @ns.doc('get_product')
+    @ns.response(404, 'Product not found')
+    @ns.marshal_with(shopcart_model)
+    def get(self, user_id, product_id):
+        """
+        Retrieve a product from user's shopcart 
+
+        This endpoint will return a product having given product_id from user having given user_id
+        """
+        app.logger.info("Request to Retrieve a product with id [%s] from shopcart of user with id [%s]", product_id, user_id)
+        result = Shopcart.find(user_id, product_id)
+        if not result:
+            raise NotFound("User with id '{uid}' doesn't have product with id '{pid}' was not found.' in the shopcart ".format(uid = user_id, pid = product_id))
+        return result.serialize(),status.HTTP_200_OK
+
+    #------------------------------------------------------------------
+    # DELETES A PRODUCT FROM USER'S SHOPCART
+    #------------------------------------------------------------------
+    @ns.doc('delete_product')
+    @ns.response(204, 'Product deleted')
+    def delete(self, user_id, product_id):
+        """
+        Delete a Pet
+
+        This endpoint will delete a product based the id of product and user specified in the path
+        """
+        app.logger.info('Request to Delete a product with id [%s] from user with id [%s]', user_id, product_id)
+        shopcart = Shopcart.find(user_id, product_id)
+        if shopcart:
             shopcart.delete()
-    return make_response('', status.HTTP_204_NO_CONTENT)
+        return '', status.HTTP_204_NO_CONTENT
+
+
+    #------------------------------------------------------------------
+    # UPDATE A PRODUCT IN USER'S SHOPCART
+    #------------------------------------------------------------------
+    @ns.doc('update_product')
+    @ns.response(404, 'Product not found')
+    @ns.response(400, 'The posted Product data was not valid')
+    @ns.expect(shopcart_model)
+    @ns.marshal_with(shopcart_model)
+    def put(self, user_id, product_id):
+        """
+        Update a Shopcart entry specific to that user_id and product_id
+        This endpoint will update a Shopcart based the data in the body that is posted
+        """
+        app.logger.info('Request to Update a product with id [%s] from user with id [%s]', user_id, product_id)
+        check_content_type('application/json')
+        shopcart = Shopcart.find(user_id, product_id)
+        if not shopcart:
+            raise NotFound("User with id '{uid}' doesn't have product with id '{pid}' was not found.' in the shopcart ".format(uid = user_id, pid = product_id))
+        
+        data = api.payload
+        app.logger.info(data)
+        shopcart.deserialize(data)
+        shopcart.user_id = user_id
+        shopcart.product_id = product_id
+        shopcart.save()
+        return shopcart.serialize(), status.HTTP_200_OK
 
 ######################################################################
-# DELETE ALL SHOPCARTS DATA (for testing only)
+#  PATH: /shopcarts
 ######################################################################
-@app.route('/shopcarts/reset', methods=['DELETE'])
-def shopcarts_reset():
-    """ Clears all items from shopcarts for all users from the database """
-    Shopcart.remove_all()
-    return make_response('', status.HTTP_204_NO_CONTENT)
+@ns.route('/', strict_slashes=False)
+class ShopcartCollection(Resource):
+    
+    """ Handles all interactions with collections of Shopcarts """
+    #------------------------------------------------------------------
+    # LIST ALL SHOPCARTS
+    #------------------------------------------------------------------
+    @ns.doc('list_shopcarts')
+    @ns.param('category', 'List Shopcarts grouped by user_id')
+    def get(self):
+        """ Returns all of the Shopcarts grouped by user_id """
+        app.logger.info('Request to list Shopcarts...')
+
+        users = Shopcart.list_users();
+        results = ''
+        for user_id in users:
+            inlist = Shopcart.findByUserId(user_id)
+            dt = []
+            for item in inlist:
+                tmp2 = {"product_id":item.product_id,
+                        "price": item.price,
+                        "quantity": item.quantity}
+                dt.append(tmp2)
+            tmp = {"user_id":user_id,
+                   "products":dt}
+            results += json.dumps(tmp)
+
+        return make_response(results, status.HTTP_200_OK)
+
+    #------------------------------------------------------------------
+    # ADD A NEW PRODUCT
+    #------------------------------------------------------------------
+    @ns.doc('add_product')
+    @ns.expect(shopcart_model)
+    @ns.response(400, 'The posted data was not valid')
+    @ns.response(201, 'Product added successfully')
+    @ns.marshal_with(shopcart_model, code=201)
+    def post(self):
+        """
+        Creates a Pet
+        This endpoint will create a Pet based the data in the body that is posted
+        """
+        app.logger.info('Request to Add an Item to Shopcart')
+        check_content_type('application/json')
+        shopcart = Shopcart()
+        app.logger.info('Payload = %s', api.payload)
+        shopcart.deserialize(api.payload)
+
+        #Check if the entry exists, if yes then increase quantity of product
+        exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
+        if exists:
+            exists.quantity = exists.quantity + 1
+            exists.save()
+            shopcart = exists
+
+        shopcart.save()
+
+        app.logger.info('Item with new id [%s] saved to shopcart of user [%s]!', shopcart.user_id, shopcart.product_id)
+        location_url = api.url_for(ProductResource,  user_id=shopcart.user_id, product_id=shopcart.product_id, _external=True)
+        return shopcart.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
+
+
+######################################################################
+#  PATH: /shopcarts/users
+######################################################################
+@ns.route('/users')
+class ShopcartUsersResource(Resource):
+    """
+    ShopcartUsersResource class
+
+    Allows getting the list of the users whose shopcarts worth more than given amount
+    GET /users - Returns the list of the users whose shopcarts' total is more than a certain amount
+    """
+    @ns.param('amount', 'amount for searching')
+
+    ############################################################################
+    # QUERY DATABASE FOR SHOPCARTS HAVING PRODUCTS WORTH MORE THAN GIVEN AMOUNT
+    ############################################################################
+    @ns.doc('get_users_with_shopcart_more_than_given_amount')
+    @ns.response(400, 'parameter amount not found')
+    def get(self):
+        """
+        Get the shopcart list of users
+        This endpoint will show the list of the user shopcart list
+        with amount more than given amount
+        """
+        amount = request.args.get('amount');
+        app.logger.info("Request to get the list of the user shopcart having more than {}".format(amount))
+        
+        if amount is None:
+            app.logger.info("amount is none")
+            abort(status.HTTP_400_BAD_REQUEST, 'parameter amount not found')
+        else:
+            try:
+                app.logger.info("try start")
+                amount = float(amount)
+                app.logger.info("try end")
+            except ValueError:
+                app.logger.info("value error")
+                abort(status.HTTP_400_BAD_REQUEST, 'parameter is not valid: {}'.format(amount))
+        users = Shopcart.find_users_by_shopcart_amount(amount)
+        app.logger.info("get data")
+        return users, status.HTTP_200_OK
+
+
+
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
@@ -240,17 +368,28 @@ def shopcarts_reset():
 
 @app.before_first_request
 def init_db():
-    """ Initialies the SQLAlchemy app """
+    """ Initlaize the model """
     global app
     Shopcart.init_db(app)
+
+# load sample data
+def data_load(payload):
+    """ Loads a Shopcart entry into the database """
+    shopcart = Shopcart(payload['user_id'], payload['product_id'], payload['quantity'], payload['price'])
+    shopcart.save()
+
+def data_reset():
+    """ Removes all Shopcart data from the database """
+    Shopcart.remove_all()
 
 def check_content_type(content_type):
     """ Checks that the media type is correct """
     if request.headers['Content-Type'] == content_type:
         return
     app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    abort(415, 'Content-Type must be {}'.format(content_type))
+    abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
 
+#@app.before_first_request
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """
     if not app.debug:
@@ -270,3 +409,5 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.addHandler(handler)
         app.logger.setLevel(log_level)
         app.logger.info('Logging handler established')
+
+
