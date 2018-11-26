@@ -59,3 +59,20 @@ Scenario: Update information of a product from Shopcart of the user
     Then I should see the message "Success"
     And I should see 2 in the "Quantity" field
     And I should see 13.00 in the "Price" field
+
+Scenario: Get list of products of a user's shopcart
+    When I visit the "Home Page"
+    And I set the "User Id" to 1
+    And I press the "Retrieve-All" button
+    Then I should see the message "Success"
+    And I should see 2 in the results
+    And I should not see 9 in the results
+
+Scenario: Delete all the product from a user's shopcart
+    When I visit the "Home Page"
+    And I set the "User Id" to 1
+    And I press the "Delete-All" button
+    And I set the "User Id" to 1
+    And I press the "Retrieve-All" button
+    Then I should not see 2 in the results
+    And I should not see 1 in the results
