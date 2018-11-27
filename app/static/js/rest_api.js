@@ -262,7 +262,6 @@ $(function () {
     // ****************************************
 
     $("#search-btn").click(function () {
-
         var amount = $("#amount").val();
 
         var ajax = $.ajax({
@@ -287,6 +286,7 @@ $(function () {
             }
 
             $("#query_search_results").append('</thead></table>');
+            $("#query_search_results").append(res.length)
 
             flash_message("Success")
         });
@@ -299,5 +299,52 @@ $(function () {
 
     });
 
+    // *********************************************
+    // get the total amount of user's shopcart
+    // *********************************************
+    $("#total-btn").click(function () {
+        var user_id = $("#user_id").val();
 
+        var ajax = $.ajax({
+            type : "GET",
+            url: "/shopcarts/"+user_id+"/total",
+            contentType: "application/json",
+            data: ''
+        })
+
+        ajax.done(function(res) {
+           $("#query_search_results").empty();
+           $("#search_results").empty();
+           $("#search_results").append('<table class="table-striped"><thead>');
+           var header = '<tr>'
+           header +=  '<th style="width:35%">Total Amount</th></tr>'
+           $("#search_results").append(header);
+	   var obj = jQuery.parseJSON(res);
+           var tot = obj.total_price;
+           var row = "<tr><td>"+tot+"</td></tr>";
+           $("#search_results").append(row+"</thead></table>");
+           $("#search_results").append('<br><table class="table-striped" <thead>');
+	   header = "<tr>"
+	   header +=  '<th style="width:35%">Product</th><th style="width=30%">Quantity</th><th style="width:35%">Price</th></tr>'
+           var products = obj.products;
+	   $("#search_results").append(header);
+	   for (var i = 0;i<products.length;i++) {
+               product = products[i];
+	       row = "<tr><td>"+product.product_id+"</td><td>"+product.quantity+"</td><td>"+product.price+"</td></tr>";
+	       $("#search_results").append(row);
+	   }
+	   $("#search_results").append('</thead></table>');
+           	
+
+
+           flash_message("Success")
+       });
+       ajax.fail(function(res){
+          $("#search_results").empty();
+          clear_form_data()
+          flash_message(res.responseJSON.message)
+       });
+    });
+       
+ 
 })

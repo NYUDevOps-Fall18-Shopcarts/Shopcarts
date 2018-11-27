@@ -60,6 +60,15 @@ Scenario: Update information of a product from Shopcart of the user
     And I should see 2 in the "Quantity" field
     And I should see 13.00 in the "Price" field
 
+Scenario: Get user list having shopcart worth more than a given amount
+    When I visit the "Home Page"
+    And I set the "amount" to 15
+    And I press the "Search" button
+    Then I should see 1 in the query search results
+    And I should not see 2 in the query search results
+    
+
+
 Scenario: Get list of products of a user's shopcart
     When I visit the "Home Page"
     And I set the "User Id" to 1
@@ -67,6 +76,15 @@ Scenario: Get list of products of a user's shopcart
     Then I should see the message "Success"
     And I should see 2 in the results
     And I should not see 9 in the results
+
+Scenario: Get total amount of user's shopcart
+    When I visit the "Home Page"
+    And I set the "User Id" to 1 
+    And I press the "Total" button
+    Then I should see the message "Success"
+    And I should see 25 in the results
+    And I should see 15 in the results
+
 
 Scenario: Delete all the product from a user's shopcart
     When I visit the "Home Page"
