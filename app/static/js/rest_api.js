@@ -54,12 +54,14 @@ $(function () {
 
         ajax.done(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             update_form_data(res)
             flash_message("Success")
         });
 
         ajax.fail(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             flash_message(res.responseJSON.message)
         });
     });
@@ -93,12 +95,14 @@ $(function () {
 
         ajax.done(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             update_form_data(res)
             flash_message("Success")
         });
 
         ajax.fail(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             flash_message(res.responseJSON.message)
         });
 
@@ -123,12 +127,14 @@ $(function () {
         ajax.done(function(res){
             //alert(res.toSource())
             $("#search_results").empty();
+            $("#query_search_results").empty();
             update_form_data(res)
             flash_message("Success")
         });
 
         ajax.fail(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             clear_form_data()
             flash_message(res.responseJSON.message)
         });
@@ -154,6 +160,7 @@ $(function () {
         ajax.done(function(res){
             //alert(res.toSource())
             $("#search_results").empty();
+            $("#query_search_results").empty();
             $("#search_results").append('<table class="table-striped"><thead>');
             var header = '<tr>'
             header += '<th style="width:35%">Product</th>'
@@ -173,6 +180,7 @@ $(function () {
 
         ajax.fail(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             clear_form_data()
             flash_message(res.responseJSON.message)
         });
@@ -197,12 +205,14 @@ $(function () {
 
         ajax.done(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             clear_form_data()
             flash_message("Product with ID [" + res.id + "] has been Deleted from User having ID [" + res.user_id + "]!")
         });
 
         ajax.fail(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             flash_message("Server error!")
         });
     });
@@ -224,12 +234,14 @@ $(function () {
 
         ajax.done(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             clear_form_data()
             flash_message("All products in shopcart of User [" + res.user_id + "] have been Deleted!")
         });
 
         ajax.fail(function(res){
             $("#search_results").empty();
+            $("#query_search_results").empty();
             flash_message("Server error!")
         });
     });
@@ -240,7 +252,52 @@ $(function () {
 
     $("#clear-btn").click(function () {
         $("#search_results").empty();
+        $("#query_search_results").empty();
         clear_form_data()
     });
+
+
+    // ****************************************
+    // Query shopcarts for given amount
+    // ****************************************
+
+    $("#search-btn").click(function () {
+
+        var amount = $("#amount").val();
+
+        var ajax = $.ajax({
+            type: "GET",
+            url: "/shopcarts/users?amount="+amount,
+            contentType:"application/json",
+            data: ''
+        })
+
+        ajax.done(function(res){
+            //alert(res.toSource())
+            $("#query_search_results").empty();
+            $("#search_results").empty();
+            $("#query_search_results").append('<table class="table-striped"><thead>');
+            var header = '<tr>'
+            header += '<th style="width:35%">User Id</th>'
+            $("#query_search_results").append(header);
+            for(var i = 0; i < res.length; i++) {
+                users = res[i];
+                var row = "<tr><td>"+users+"</td></tr>";
+                $("#query_search_results").append(row);
+            }
+
+            $("#query_search_results").append('</thead></table>');
+
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            $("#query_search_results").empty();
+            clear_form_data()
+            flash_message(res.responseJSON.message)
+        });
+
+    });
+
 
 })

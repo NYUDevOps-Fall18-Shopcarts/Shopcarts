@@ -47,7 +47,6 @@ class DatabaseConnectionError(ConnectionError):
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
 
-
 class Shopcart(db.Model):
     """
     Class that represents a Shopcart
@@ -58,13 +57,6 @@ class Shopcart(db.Model):
 
     logger = logging.getLogger(__name__)
     app = None
-
-    def __init__(self, user_id=0, product_id=0, quantity=0, price=0.0):
-        """ Constructor """
-        self.user_id = int(user_id)
-        self.product_id = int(product_id)
-        self.quantity = int(quantity)
-        self.price = float(price)
 
     # Table Schema
     user_id = db.Column(db.Integer,primary_key=True)
@@ -114,13 +106,6 @@ class Shopcart(db.Model):
 ######################################################################
 #  F I N D E R   M E T H O D S
 ######################################################################
-    @staticmethod
-    def list_users():
-        """ List all user in table """
-        users = []
-        for user in db.session.query(Shopcart.user_id).distinct():
-            users.append(user.user_id)
-        return users
 
     @staticmethod
     def find(user_id, product_id):
