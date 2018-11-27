@@ -92,3 +92,14 @@ def step_impl(context, value):
     #expect(element.text).to_contain(value)
     error_msg = "I should not see '%s' in '%s'" % (value, element.text)
     ensure(value in element.text, False, error_msg)
+
+@then('I should see {value} in the query search results')
+def step_impl(context, value):
+    element = context.driver.find_element_by_id('query_search_results')
+    expect(element.text).to_contain(value)
+
+@then('I should not see {value} in the query search results')
+def step_impl(context, value):
+    element = context.driver.find_element_by_id('query_search_results')
+    error_msg = "I should not see '%s' in '%s' "%(value, element.text)
+    ensure(value in element.text, False, error_msg)
