@@ -143,14 +143,14 @@ class TestShopcartServer(unittest.TestCase):
          
     def test_list_all_shopcarts(self):
         """ Query all the shopcart in the system """
-        shopcart = Shopcart.all()
+        shopcart = Shopcart.list_users()
         cnt = len(shopcart)
         print(cnt)
         print("----------------------------------------------------")
         resp = self.app.get('/shopcarts',
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)        
-        
+        print(resp.data); 
         data = json.loads(resp.data)
         self.assertEqual(cnt, len(data))
 

@@ -141,49 +141,100 @@ $(function () {
 
     });
 
-
+	
+	
     // ****************************************
     // Retrieve All items in shopcart
     // ****************************************
 
     $("#retrieve-all-btn").click(function () {
-
         var user_id = $("#user_id").val();
 
-        var ajax = $.ajax({
-            type: "GET",
-            url: "/shopcarts/"+user_id,
-            contentType:"application/json",
-            data: ''
-        })
+	if (user_id == '') {
+            var ajax = $.ajax({
+                type: "GET",
+                url: "/shopcarts",
+                contentType:"application/json",
+                data: ''
+            })
+	    ajax.done(function(res){
+		var header = "";
+                $("#search_results").empty();
+                $("#query_search_results").empty();
+                $("#search_results").append('<table class="table-striped">');
 
-        ajax.done(function(res){
-            //alert(res.toSource())
-            $("#search_results").empty();
-            $("#query_search_results").empty();
-            $("#search_results").append('<table class="table-striped"><thead>');
-            var header = '<tr>'
-            header += '<th style="width:35%">Product</th>'
-            header += '<th style="width:45%">Quantity</th>'
-            header += '<th style="width:20%">Price</th></tr>'
-            $("#search_results").append(header);
-            for(var i = 0; i < res.length; i++) {
-                product = res[i];
-                var row = "<tr><td>"+product.product_id+"</td><td>"+product.quantity+"</td><td>"+product.price+"</td></tr>";
-                $("#search_results").append(row);
-            }
+		var obj = jQuery.parseJSON(res);
+                for (var i=0;i<obj.length;i++) {
+		    usr_id = obj[i].user_id;	
+		    header = '<tr><colspan=3><td><b>User ID</b> : '+usr_id+"</td></tr>";
+		    $("#search_results").append(header);
+                    prod = obj[i].products;
+		    header = "<tr><td width=45%>Product ID</td><td width=30%>Price</td><td>Quantity</td></tr>";
+		    for (var j=0;j<prod.length;j++) {
+                        prod_id = prod[j].product_id;
+			price = prod[j].price;
+			quantity = prod[j].quantity;
+			header += "<tr><td>"+prod_id+"</td><td>"+price+"</td><td>"+quantity+"</td></tr>";
 
-            $("#search_results").append('</thead></table>');
 
-            flash_message("Success")
-        });
+                    }
+		    header += "<tr><td colspan=3>&nbsp;</td><tr>";
+		    $("#search_results").append(header);
 
-        ajax.fail(function(res){
-            $("#search_results").empty();
-            $("#query_search_results").empty();
-            clear_form_data()
-            flash_message(res.responseJSON.message)
-        });
+		}
+
+		$("search_results").append("</table>");
+                flash_message("Success")
+            });     
+            ajax.fail(function(res){
+                $("#search_results").empty();
+                $("#query_search_results").empty();
+                clear_form_data()
+                flash_message(res.responseJSON.message)
+            });
+		    
+
+
+
+          
+	} else {
+
+
+            var ajax = $.ajax({
+                type: "GET",
+                url: "/shopcarts/"+user_id,
+                contentType:"application/json",
+                data: ''
+            })
+
+            ajax.done(function(res){
+                //alert(res.toSource())
+                $("#search_results").empty();
+                $("#query_search_results").empty();
+                $("#search_results").append('<table class="table-striped"><thead>');
+                var header = '<tr>'
+                header += '<th style="width:35%">Product</th>'
+                header += '<th style="width:45%">Quantity</th>'
+                header += '<th style="width:20%">Price</th></tr>'
+                $("#search_results").append(header);
+                for(var i = 0; i < res.length; i++) {
+                    product = res[i];
+                    var row = "<tr><td>"+product.product_id+"</td><td>"+product.quantity+"</td><td>"+product.price+"</td></tr>";
+                    $("#search_results").append(row);
+                }
+
+                $("#search_results").append('</thead></table>');
+
+                flash_message("Success")
+            });
+
+            ajax.fail(function(res){
+                $("#search_results").empty();
+                $("#query_search_results").empty();
+                clear_form_data()
+                flash_message(res.responseJSON.message)
+            });
+	}
 
     });
 

@@ -280,6 +280,7 @@ class ShopcartCollection(Resource):
 
         users = Shopcart.list_users();
         results = ''
+        #res = []
         for user_id in users:
             inlist = Shopcart.findByUserId(user_id)
             dt = []
@@ -290,9 +291,13 @@ class ShopcartCollection(Resource):
                 dt.append(tmp2)
             tmp = {"user_id":user_id,
                    "products":dt}
+            if len(results)>1: 
+                results += ","
             results += json.dumps(tmp)
-
-        return make_response(results, status.HTTP_200_OK)
+        #res.append()
+        #res.append(results)
+        res = "["+results+"]"
+        return make_response(res, status.HTTP_200_OK)
 
     #------------------------------------------------------------------
     # ADD A NEW PRODUCT
