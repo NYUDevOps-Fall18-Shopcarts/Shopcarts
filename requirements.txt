@@ -2,11 +2,13 @@ Flask==0.12.2
 Flask-API==1.0
 flask-restplus==0.10.1
 Flask-SQLAlchemy==2.3.2
-SQLAlchemy==1.2.12
-redis==2.10.6
+SQLAlchemy==1.2.14
+ibm-db==2.0.9
+ibm-db-sa==0.3.2
+psycopg2-binary==2.7.4
 Cerberus==1.1
-honcho==1.0.1
 # Testing
+honcho==1.0.1
 pylint==1.9.3
 mock==2.0.0
 httpie==0.9.9

@@ -28,13 +28,13 @@ quantity (int)     - number of items User wants to buy of that particular produc
 price(float)       - cost of one item of the Product
 
 """
+import os
+import json
 import logging
+from . import db
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from sqlalchemy.sql import label
-from redis import Redis
-from redis.exceptions import ConnectionError
-from . import db
 
 ######################################################################
 # Custom Exceptions
@@ -42,9 +42,8 @@ from . import db
 class DataValidationError(ValueError):
     pass
 
-class DatabaseConnectionError(ConnectionError):
+class DatabaseConnectionError(OSError):
     pass
-
 
 class Shopcart(db.Model):
     """
@@ -55,7 +54,6 @@ class Shopcart(db.Model):
     """
 
     logger = logging.getLogger(__name__)
-    app = None
 
     # Table Schema
     user_id = db.Column(db.Integer,primary_key=True)
@@ -162,11 +160,7 @@ class Shopcart(db.Model):
 #  D A T A B A S E   C O N N E C T I O N   M E T H O D S
 ######################################################################
     @staticmethod
-    def init_db(app):
+    def init_db():
         """ Initializes the database session """
         Shopcart.logger.info('Initializing database')
-        Shopcart.app = app
-        # This is where we initialize SQLAlchemy from the Flask app
-        db.init_app(app)
-        #app.app_context().push()
         db.create_all()  # make our sqlalchemy tables

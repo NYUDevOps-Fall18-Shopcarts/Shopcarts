@@ -92,4 +92,26 @@ Vagrant.configure(2) do |config|
     echo "************************************\n"
   SHELL
 
+  ######################################################################
+  # Add PostgreSQL docker container
+  ######################################################################
+  config.vm.provision "docker" do |d|
+    d.pull_images "postgres"
+    d.run "postgres",
+       args: "-d --name postgres -p 5432:5432 -v postgresql_data:/var/lib/postgresql/data"
+  end
+
+  # Create the database after Docker is running
+  config.vm.provision "shell", inline: <<-SHELL
+    # Wait for mariadb to come up
+    echo "Waiting 20 seconds for PostgreSQL to start..."
+    sleep 20
+    cd /vagrant
+    docker exec postgres psql -U postgres -c "CREATE DATABASE development;"
+    python manage.py development
+    docker exec postgres psql -U postgres -c "CREATE DATABASE test;"
+    python manage.py test
+    cd
+  SHELL
+
 end

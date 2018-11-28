@@ -46,7 +46,7 @@ class TestShopcarts(unittest.TestCase):
         pass
 
     def setUp(self):
-        Shopcart.init_db(app)
+        Shopcart.init_db()
         db.drop_all()    # clean up the last tests
         db.create_all()  # make our sqlalchemy tables
 
