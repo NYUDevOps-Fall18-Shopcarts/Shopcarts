@@ -391,9 +391,8 @@ def shopcarts_reset():
 
 @app.before_first_request
 def init_db():
-    """ Initlaize the model """
-    global app
-    Shopcart.init_db(app)
+    """ Initlaize the SQLAlchemy app"""
+    Shopcart.init_db()
 
 # load sample data
 def data_load(payload):
