@@ -163,8 +163,4 @@ class Shopcart(db.Model):
     def init_db():
         """ Initializes the database session """
         Shopcart.logger.info('Initializing database')
-        #Shopcart.app = app
-        # This is where we initialize SQLAlchemy from the Flask app
-        #db.init_app(app)
-        #app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
