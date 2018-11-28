@@ -76,3 +76,12 @@ Scenario: Delete all the product from a user's shopcart
     And I press the "Retrieve-All" button
     Then I should not see 2 in the results
     And I should not see 1 in the results
+
+Scenario: Delete a product from a user's shopcart
+    	    When I visit the "Home Page"
+    	    And I set the "User Id" to 1
+          And I set the "Product Id" to 1
+    	    And I press the "Delete" button
+    	    And I set the "User Id" to 1
+    	    And I press the "Retrieve-All" button
+    	    Then I should see 2 in the results
