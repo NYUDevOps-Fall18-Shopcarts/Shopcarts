@@ -30,6 +30,17 @@ from werkzeug.exceptions import NotFound,BadRequest
 from app.model import Shopcart, DataValidationError, db
 import app.service as service
 
+# Status Codes
+HTTP_200_OK = 200
+HTTP_201_CREATED = 201
+HTTP_204_NO_CONTENT = 204
+HTTP_400_BAD_REQUEST = 400
+HTTP_404_NOT_FOUND = 404
+HTTP_405_METHOD_NOT_ALLOWED = 405
+HTTP_409_CONFLICT = 409
+HTTP_415_UNSUPPORTED_MEDIA_TYPE = 415
+
+
 DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///../db/test.db')
 
 ######################################################################
@@ -62,6 +73,23 @@ class TestShopcartServer(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+
+
+    # FlaskRESTPlus takes over the index so we can't test it
+    def test_index(self):
+        """ Test the index page """
+        resp = self.app.get('/')
+        self.assertEqual(resp.status_code, HTTP_200_OK)
+        self.assertIn('Shopcarts REST API Service', resp.data)
+
+    
+    def test_health_check(self):
+        """ Test /healthcheck """
+        resp = self.app.get("/healthcheck")
+        self.assertEqual(resp.status_code, HTTP_200_OK)
+        self.assertIn('Healthy', resp.data)
+
+
 
     def test_create_shopcart_entry_new_product(self):
         """ Create a new Shopcart entry - add new product"""
@@ -100,9 +128,29 @@ class TestShopcartServer(unittest.TestCase):
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
-        #self.assertEqual(len(resp.data), len(shopcart))
-        #self.assertEqual(data['user_id'], 1)
         self.assertTrue(len(resp.data) > 0)
+        
+        resp = self.app.get('/shopcarts/{}',999,
+                             content_type='application/json')
+        self.assertRaises(NotFound)
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+         
+    def test_list_all_shopcarts(self):
+        """ Query all the shopcart in the system """
+        shopcart = Shopcart.all()
+        cnt = len(shopcart)
+        print(cnt)
+        print("----------------------------------------------------")
+        resp = self.app.get('/shopcarts',
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)        
+        
+        data = json.loads(resp.data)
+        self.assertEqual(cnt, len(data))
+
+
+
 
 
     def test_shop_cart_amount_by_user_id(self):
@@ -140,7 +188,11 @@ class TestShopcartServer(unittest.TestCase):
         #Check quantity is updated to 3
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['quantity'], 5)
-
+   
+        resp = self.app.put('/shopcarts/999/product/999',
+                            data=data,
+                            content_type='application/json')
+        self.assertRaises(NotFound)
 
     def test_get_shopcart_product_info(self):
         """ Query quantity and price of a product shopcart by user_id and product_id """
@@ -207,6 +259,25 @@ class TestShopcartServer(unittest.TestCase):
         # Delet the test products of same user
         resp = self.app.delete('/shopcarts/{uid}'.format(uid = 1))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_reset(self):
+        # Add test products in database
+        test_product = dict(user_id=1, product_id=1, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        test_product = dict(user_id=1, product_id=3, quantity=1, price=12.00)
+        data = json.dumps(test_product)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        resp = self.app.delete('/shopcarts/reset')
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+
 
 ######################################################################
 # Utility functions

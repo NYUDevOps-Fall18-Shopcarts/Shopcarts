@@ -88,6 +88,8 @@ class TestShopcarts(unittest.TestCase):
         self.assertEqual(shopcart.product_id, 1)
         self.assertEqual(shopcart.quantity, 1)
         self.assertEqual(shopcart.price, 12.00)
+        self.test = 'test'
+        self.assertRaises(DataValidationError)
 
     def test_deserialize_bad_data(self):
         """ Test deserialization of bad data """
@@ -190,6 +192,19 @@ class TestShopcarts(unittest.TestCase):
         shopcart.delete()
         shopcarts = Shopcart.findByUserId(1)
         self.assertIsNot(shopcarts, None)
+
+
+    def test_remove_all(self):
+        """ Remove all the shopcart data in the system """
+        shopcart = Shopcart(user_id=1, product_id=1, quantity=1, price=12.00)
+        shopcart.save()
+        shopcart = Shopcart(user_id=1, product_id=2, quantity=1, price=12.00)
+        shopcart.save()
+
+        # delete data
+        shopcart.remove_all()
+        shopcarts = Shopcart.all()
+        self.assertEqual(len(shopcarts), 0)
 
 
 
