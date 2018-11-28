@@ -122,7 +122,9 @@ class ShopcartResource(Resource):
        app.logger.info("Request to get the list of the product in a user [%s]'s shopcart", user_id)
        shopcarts = []
        shopcarts = Shopcart.findByUserId(user_id)
+       print(shopcarts.count())
        if not shopcarts:
+       #if shopcarts.count() == 0:
            raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
        results = [shopcart.serialize() for shopcart in shopcarts]
        return results, status.HTTP_200_OK
@@ -278,6 +280,7 @@ class ShopcartCollection(Resource):
 
         users = Shopcart.list_users();
         results = ''
+        #res = []
         for user_id in users:
             inlist = Shopcart.findByUserId(user_id)
             dt = []
@@ -288,9 +291,13 @@ class ShopcartCollection(Resource):
                 dt.append(tmp2)
             tmp = {"user_id":user_id,
                    "products":dt}
+            if len(results)>1: 
+                results += ","
             results += json.dumps(tmp)
-
-        return make_response(results, status.HTTP_200_OK)
+        #res.append()
+        #res.append(results)
+        res = "["+results+"]"
+        return make_response(res, status.HTTP_200_OK)
 
     #------------------------------------------------------------------
     # ADD A NEW PRODUCT
