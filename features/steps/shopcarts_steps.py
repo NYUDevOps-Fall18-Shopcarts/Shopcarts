@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 
-#WAIT_SECONDS=30
+WAIT_SECONDS=30
 
 BASE_URL = getenv('BASE_URL', 'http://localhost:5000/')
 
@@ -80,6 +80,13 @@ def step_impl(context, int_value, element_name):
     element_id = element_name.lower()
     element = context.driver.find_element_by_id(element_id)
     expect(element.get_attribute('value')).to_equal(int_value)
+    # found = WebDriverWait(context.driver, WAIT_SECONDS).until(
+    #     expected_conditions.text_to_be_present_in_element_value(
+    #         (By.ID, element_name),
+    #         str(int_value)
+    #     )
+    # )
+    # expect(found).to_be(True)
 
 @then('I should see {value} in the results')
 def step_impl(context, value):
