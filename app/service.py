@@ -122,7 +122,9 @@ class ShopcartResource(Resource):
        app.logger.info("Request to get the list of the product in a user [%s]'s shopcart", user_id)
        shopcarts = []
        shopcarts = Shopcart.findByUserId(user_id)
+       print(shopcarts.count())
        if not shopcarts:
+       #if shopcarts.count() == 0:
            raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
        results = [shopcart.serialize() for shopcart in shopcarts]
        return results, status.HTTP_200_OK

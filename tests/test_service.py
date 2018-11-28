@@ -129,11 +129,16 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
         self.assertTrue(len(resp.data) > 0)
-        
-        resp = self.app.get('/shopcarts/{}',999,
+      
+        resp = self.app.get('/shopcarts/999',
                              content_type='application/json')
-        self.assertRaises(NotFound)
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        #self.assertRaises(NotFound)
+        #self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(len(json.loads(resp.data)),0)
+
+
+
+
 
          
     def test_list_all_shopcarts(self):
@@ -211,6 +216,8 @@ class TestShopcartServer(unittest.TestCase):
         ans = json.loads(resp.data)
         self.assertEqual(ans['quantity'], shopcart.quantity)
         self.assertEqual(ans['price'], shopcart.price)
+
+
 
     def test_delete_product(self):
         """ Delete product in Shopcart """
