@@ -159,5 +159,5 @@ class Shopcart(db.Model):
         Shopcart.app = app
         # This is where we initialize SQLAlchemy from the Flask app
         db.init_app(app)
-        app.app_context().push()
+        #app.app_context().push()
         db.create_all()  # make our sqlalchemy tables

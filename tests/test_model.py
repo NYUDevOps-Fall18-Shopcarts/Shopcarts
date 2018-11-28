@@ -22,7 +22,7 @@ Test cases can be run with:
 import unittest
 import os
 from app.model import Shopcart, DataValidationError, db
-from app import app
+from app.service import app
 
 DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///../db/test.db')
 
@@ -46,14 +46,16 @@ class TestShopcarts(unittest.TestCase):
         pass
 
     def setUp(self):
+        self.app_context = app.app_context()
+        self.app_context.push()
         Shopcart.init_db(app)
         db.drop_all()    # clean up the last tests
         db.create_all()  # make our sqlalchemy tables
 
-
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+        self.app_context.pop()
 
     def test_delete_a_product(self):
         """ Delete a Product """

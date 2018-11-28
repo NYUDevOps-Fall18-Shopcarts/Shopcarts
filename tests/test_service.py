@@ -29,6 +29,7 @@ from mock import MagicMock, patch
 from werkzeug.exceptions import NotFound,BadRequest
 from app.model import Shopcart, DataValidationError, db
 import app.service as service
+from app.service import app
 
 DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///../db/test.db')
 
@@ -51,6 +52,8 @@ class TestShopcartServer(unittest.TestCase):
         pass
 
     def setUp(self):
+        self.app_context = app.app_context()
+        self.app_context.push()
         """ Runs before each test """
         service.init_db()
         db.drop_all()    # clean up the last tests
@@ -62,6 +65,7 @@ class TestShopcartServer(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+        self.app_context.pop()
 
     def test_create_shopcart_entry_new_product(self):
         """ Create a new Shopcart entry - add new product"""
