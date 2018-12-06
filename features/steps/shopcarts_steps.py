@@ -15,7 +15,7 @@ from selenium.webdriver.support import expected_conditions
 
 #WAIT_SECONDS=30
 
-BASE_URL = getenv('BASE_URL', 'http://localhost:5000/')
+BASE_URL = getenv('BASE_URL', 'http://nyu-shopcart-service-f18.mybluemix.net/')
 
 @when('I visit the "Home Page"')
 def step_impl(context):
