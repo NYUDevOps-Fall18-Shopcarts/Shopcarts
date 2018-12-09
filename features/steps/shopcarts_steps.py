@@ -15,7 +15,8 @@ from selenium.webdriver.support import expected_conditions
 
 WAIT_SECONDS=30
 
-BASE_URL = getenv('BASE_URL', 'http://nyu-shopcart-service-f18.mybluemix.net/')
+#BASE_URL = getenv('BASE_URL', 'http://localhost:5000/')
+BASE_URL = getenv('BASE_URL', 'http://nyu-shopcart-service-f18.mybluemix.net')
 
 @when('I visit the "Home Page"')
 def step_impl(context):
@@ -78,20 +79,34 @@ def step_impl(context, message):
 @then('I should see {int_value} in the "{element_name}" field')
 def step_impl(context, int_value, element_name):
     element_id = element_name.lower()
-    element = context.driver.find_element_by_id(element_id)
-    expect(element.get_attribute('value')).to_equal(int_value)
-    # found = WebDriverWait(context.driver, WAIT_SECONDS).until(
-    #     expected_conditions.text_to_be_present_in_element_value(
-    #         (By.ID, element_name),
-    #         str(int_value)
-    #     )
-    # )
-    # expect(found).to_be(True)
+    #element = context.driver.find_element_by_id(element_id)
+    #expect(element.get_attribute('value')).to_equal(int_value)
+
+    found = WebDriverWait(context.driver, WAIT_SECONDS).until(
+         expected_conditions.text_to_be_present_in_element_value(
+             (By.ID, element_id),
+             str(int_value)
+         )
+    )
+    expect(found).to_be(True)
+
+
 
 @then('I should see {value} in the results')
 def step_impl(context, value):
-    element = context.driver.find_element_by_id('search_results')
-    expect(element.text).to_contain(value)
+    #element_id = context.driver.find_element_by_id('search_results')
+    #expect(element.text).to_contain(value)
+
+    found = WebDriverWait(context.driver, WAIT_SECONDS).until(
+         expected_conditions.text_to_be_present_in_element(
+             (By.ID, 'search_results'),
+             value
+         )
+    )
+    expect(found).to_be(True)
+
+
+
 
 @then('I should not see {value} in the results')
 def step_impl(context, value):
@@ -100,10 +115,26 @@ def step_impl(context, value):
     error_msg = "I should not see '%s' in '%s'" % (value, element.text)
     ensure(value in element.text, False, error_msg)
 
+
+
+
 @then('I should see {value} in the query search results')
 def step_impl(context, value):
-    element = context.driver.find_element_by_id('query_search_results')
-    expect(element.text).to_contain(value)
+    #element = context.driver.find_element_by_id('query_search_results')
+    #expect(element.text).to_contain(value)
+    found = WebDriverWait(context.driver, WAIT_SECONDS).until(
+         expected_conditions.text_to_be_present_in_element(
+             (By.ID, 'query_search_results'),
+             value
+         )
+    )
+    expect(found).to_be(True)
+
+
+
+
+
+
 
 @then('I should not see {value} in the query search results')
 def step_impl(context, value):
