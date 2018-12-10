@@ -33,7 +33,9 @@ def index():
     """ Root URL response """
     return app.send_static_file('index.html')
 
- ######################################################################
+
+
+######################################################################
 ######################################################################
 # Configure Swagger before initilaizing it
 ######################################################################
@@ -41,7 +43,7 @@ api = Api(app,
           version='1.0.0',
           title='Shopcarts REST API Service',
           description='This service aims at providing users facility to add, remove, modify and list items in their cart.',
-          doc='/apidocs/'
+          doc='/apidocs/index.html'
           # prefix='/api'
          )
 
@@ -81,7 +83,15 @@ def database_connection_error(error):
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
-    return bad_request(error)
+    #return bad_request(error)
+    message = error.message or str(error)
+    app.logger.info(message)
+    return {
+        'status_code': status.HTTP_400_BAD_REQUEST,
+        'error': 'Bad Request',
+        'message': message
+    }, status.HTTP_400_BAD_REQUEST
+
 
 ######################################################################
 # GET HEALTH CHECK
@@ -123,9 +133,10 @@ class ShopcartResource(Resource):
        shopcarts = []
        shopcarts = Shopcart.findByUserId(user_id)
        print(shopcarts.count())
-       if not shopcarts:
+       if not shopcarts or shopcarts.count() == 0:
+           api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
        #if shopcarts.count() == 0:
-           raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
+           #raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
        results = [shopcart.serialize() for shopcart in shopcarts]
        return results, status.HTTP_200_OK
 
@@ -273,7 +284,7 @@ class ShopcartCollection(Resource):
     # LIST ALL SHOPCARTS
     #------------------------------------------------------------------
     @ns.doc('list_shopcarts')
-    @ns.param('category', 'List Shopcarts grouped by user_id')
+    #@ns.param('category', 'List Shopcarts grouped by user_id')
     def get(self):
         """ Returns all of the Shopcarts grouped by user_id """
         app.logger.info('Request to list Shopcarts...')
