@@ -3,7 +3,7 @@
 applications:
 - name: nyu-shopcart-service-f18
   memory: 64M
-  instances: 1
+  instances: 2
   timeout: 180
   #random-route: true
   host: nyu-shopcart-service-f18
