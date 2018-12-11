@@ -28,6 +28,7 @@ from flask_api import status    # HTTP Status Codes
 from mock import MagicMock, patch
 from werkzeug.exceptions import NotFound,BadRequest
 from app.model import Shopcart, DataValidationError, db
+import app.vcap_services as vcap
 import app.service as service
 from app.service import app
 
@@ -130,13 +131,11 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
         self.assertTrue(len(resp.data) > 0)
-      
-        resp = self.app.get('/shopcarts/999',
-                             content_type='application/json')
-        #self.assertRaises(NotFound)
-        #self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(len(json.loads(resp.data)),0)
 
+        resp = self.app.get('/shopcarts/12345',
+                            content_type='application/json')
+        self.assertRaises(NotFound)
+        self.assertEqual(len(json.loads(resp.data)),0)
 
 
 
@@ -218,6 +217,10 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(ans['quantity'], shopcart.quantity)
         self.assertEqual(ans['price'], shopcart.price)
 
+        resp = self.app.get('/shopcarts/999/product/999',
+                            content_type='application/json')
+        self.assertRaises(NotFound)
+
 
 
     def test_delete_product(self):
@@ -285,7 +288,9 @@ class TestShopcartServer(unittest.TestCase):
         resp = self.app.delete('/shopcarts/reset')
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
-
+    def test_vcap_services(self):
+        db_url = vcap.get_database_uri()
+        self.assertNotEqual(db_url, "")
 
 ######################################################################
 # Utility functions

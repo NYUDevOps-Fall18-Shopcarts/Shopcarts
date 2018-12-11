@@ -394,16 +394,6 @@ def init_db():
     """ Initlaize the SQLAlchemy app"""
     Shopcart.init_db()
 
-# load sample data
-def data_load(payload):
-    """ Loads a Shopcart entry into the database """
-    shopcart = Shopcart(payload['user_id'], payload['product_id'], payload['quantity'], payload['price'])
-    shopcart.save()
-
-def data_reset():
-    """ Removes all Shopcart data from the database """
-    Shopcart.remove_all()
-
 def check_content_type(content_type):
     """ Checks that the media type is correct """
     if request.headers['Content-Type'] == content_type:

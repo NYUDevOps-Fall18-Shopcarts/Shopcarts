@@ -95,6 +95,9 @@ class TestShopcarts(unittest.TestCase):
         data = "this is not a dictionary"
         shopcart = Shopcart()
         self.assertRaises(DataValidationError, shopcart.deserialize, data)
+        invalidKey = {"user_id": 1, "product_id": 1}
+        self.assertRaises(DataValidationError, shopcart.deserialize, invalidKey)
+
 
     def test_find_shopcart_entry(self):
         """ Find a Shopcart by user_id and product_id """
