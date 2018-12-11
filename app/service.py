@@ -187,7 +187,7 @@ class ShopcartAction(Resource):
     @ns.response(200, 'Success')
     def get(self, user_id):
        """ Get the shopcart entry for user (user_id)
-       This endpoint will show the list of products in user's shopcart from the database
+       This endpoint will show the total amount of the all items in the shopcart along with the list of items in user's shopcart 
        """
 
        app.logger.info("Request to get the total amount of a user [%s]'s shopcart", user_id)
