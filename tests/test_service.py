@@ -124,8 +124,6 @@ class TestShopcartServer(unittest.TestCase):
                               content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-        
-
 
         # add a new product to shopcart of user
         new_product = dict(user_id=2, product_id=1, quantity=1, price=12.00)
@@ -224,12 +222,37 @@ class TestShopcartServer(unittest.TestCase):
                              data=data,
                              content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # make it chekc if the quantity is number
+        shopcart = Shopcart.find(1,1)
+        test_error = dict(user_id=1, product_id=1, quantity='a', price=12.00)
+        data_error = json.dumps(test_error)
+        resp = self.app.put('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id),
+                            data=data_error,
+                            content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+
+
+        # make it chekc if the quantity is more than 0
+	shopcart = Shopcart.find(1,1)
+	test_error = dict(user_id=1, product_id=1, quantity=0, price=12.00)
+        data_error = json.dumps(test_error)
+	resp = self.app.put('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id),
+                            data=data_error,
+                            content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+
         # update the test product quantity
         shopcart = Shopcart.find(1, 1)
         resp = self.app.put('/shopcarts/{uid}/product/{pid}'.format(uid = shopcart.user_id, pid = shopcart.product_id),
                             data=data,
                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
 
         #Check quantity is updated to 3
         new_json = json.loads(resp.data)
