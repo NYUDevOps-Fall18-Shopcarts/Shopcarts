@@ -359,7 +359,7 @@ class ShopcartCollection(Resource):
             #Check if the entry exists, if yes then increase quantity of product
             exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
             if exists:
-                exists.quantity = exists.quantity + 1
+                exists.quantity = exists.quantity + q
                 exists.save()
                 shopcart = exists
 
