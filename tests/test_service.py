@@ -99,6 +99,34 @@ class TestShopcartServer(unittest.TestCase):
         #Get number of products in users shopcart
         product_count = self.get_product_count(2)
 
+
+        # check if the required data is missing
+        new_prod = dict(user_id='',product_id=1, quantity=1, price=12.00)
+        data = json.dumps(new_prod)
+        resp = self.app.post('/shopcarts',
+                              data=data,
+                              content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+        new_prod = dict(user_id=1, product_id=1, quantity='a', price=12.00)
+        data = json.dumps(new_prod)
+        resp = self.app.post('/shopcarts',
+                              data=data,
+                              content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+
+        new_prod = dict(user_id=1, product_id=1, quantity=0, price=12.00)
+        data = json.dumps(new_prod)
+        resp = self.app.post('/shopcarts',
+                              data=data,
+                              content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+        
+
+
         # add a new product to shopcart of user
         new_product = dict(user_id=2, product_id=1, quantity=1, price=12.00)
         data = json.dumps(new_product)
