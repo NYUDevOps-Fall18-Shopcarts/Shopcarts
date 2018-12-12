@@ -340,18 +340,34 @@ class ShopcartCollection(Resource):
         app.logger.info('Payload = %s', api.payload)
         shopcart.deserialize(api.payload)
 
-        #Check if the entry exists, if yes then increase quantity of product
-        exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
-        if exists:
-            exists.quantity = exists.quantity + 1
-            exists.save()
-            shopcart = exists
+        q = 0;
+        try:
+            q = int(shopcart.quantity)
+        except ValueError:
+                app.logger.info("value error")
+                raise DataValidationError
+                #abort(status.HTTP_400_BAD_REQUEST, 'Quantity parameter is not valid: {}'.format(shopcart.quantity))
 
-        shopcart.save()
+        if shopcart.user_id is None or shopcart.user_id == '' or shopcart.product_id is None or shopcart.product_id =='' \
+            or shopcart.price is None or shopcart.price == '' or shopcart.quantity is None or shopcart.quantity == '':
+            app.logger.info("some parameter is none")
+            abort(status.HTTP_400_BAD_REQUEST, 'Some data is missing in the request')
+        elif q < 1:
+            app.logger.info("Added quantity is 0")
+            abort(status.HTTP_400_BAD_REQUEST, 'You should input number more than 0 for quantity to add a product')
+        else:
+            #Check if the entry exists, if yes then increase quantity of product
+            exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
+            if exists:
+                exists.quantity = exists.quantity + 1
+                exists.save()
+                shopcart = exists
 
-        app.logger.info('Item with new id [%s] saved to shopcart of user [%s]!', shopcart.user_id, shopcart.product_id)
-        location_url = api.url_for(ProductResource,  user_id=shopcart.user_id, product_id=shopcart.product_id, _external=True)
-        return shopcart.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
+            shopcart.save()
+
+            app.logger.info('Item with new id [%s] saved to shopcart of user [%s]!', shopcart.user_id, shopcart.product_id)
+            location_url = api.url_for(ProductResource,  user_id=shopcart.user_id, product_id=shopcart.product_id, _external=True)
+            return shopcart.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
 
 
 ######################################################################

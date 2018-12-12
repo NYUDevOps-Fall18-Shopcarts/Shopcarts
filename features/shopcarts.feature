@@ -24,6 +24,16 @@ Scenario: Add a new product
     And I press the "Create" button
     Then I should see the message "Success"
 
+Scenario: Add a new product with invalid request
+    When I visit the "Home Page"
+    And I set the "Product Id" to 1
+    And I set the "User Id" to 3
+    And I set the "Quantity" to 0
+    And I set the "Price" to 11.00
+    And I press the "Create" button
+    Then I should see the message "more than 0"
+
+
 Scenario: Add same product
     When I visit the "Home Page"
     And I set the "Product Id" to 1

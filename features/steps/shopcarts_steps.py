@@ -28,6 +28,7 @@ def step_impl(context, message):
     error_msg = "I should not see '%s' in '%s'" % (message, context.resp.text)
     ensure(message in context.resp.text, False, error_msg)
 
+
 @then('I should see "{message}" in the title')
 def step_impl(context, message):
     """ Check the document title for a message """
@@ -66,15 +67,15 @@ def step_impl(context, element_name, int_value):
 
 @then('I should see the message "{message}"')
 def step_impl(context, message):
-    element = context.driver.find_element_by_id('flash_message')
-    # expect(element.text).to_contain(message)
-    # found = WebDriverWait(context.driver, WAIT_SECONDS).until(
-    #     expected_conditions.text_to_be_present_in_element(
-    #         (By.ID, 'flash_message'),
-    #         message
-    #     )
-    # )
-    # expect(found).to_be(True)
+    #element = context.driver.find_element_by_id('flash_message')
+    #expect(element.text).to_contain(message)
+    found = WebDriverWait(context.driver, WAIT_SECONDS).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'flash_message'),
+            message
+        )
+     )
+    expect(found).to_be(True)
 
 @then('I should see {int_value} in the "{element_name}" field')
 def step_impl(context, int_value, element_name):
@@ -129,11 +130,6 @@ def step_impl(context, value):
          )
     )
     expect(found).to_be(True)
-
-
-
-
-
 
 
 @then('I should not see {value} in the query search results')
