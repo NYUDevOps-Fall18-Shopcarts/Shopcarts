@@ -134,8 +134,8 @@ class ShopcartResource(Resource):
        shopcarts = []
        shopcarts = Shopcart.findByUserId(user_id)
        print(shopcarts.count())
-       if not shopcarts:
-           api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
+       #if not shopcarts:
+           #api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
        if shopcarts.count() == 0:
            api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
            #raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))

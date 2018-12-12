@@ -131,7 +131,7 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
         self.assertTrue(len(resp.data) > 0)
-      
+
         resp = self.app.get('/shopcarts/999',
                              content_type='application/json')
         #self.assertRaises(NotFound)
@@ -159,7 +159,15 @@ class TestShopcartServer(unittest.TestCase):
         data = json.loads(resp.data)
         self.assertEqual(cnt, len(data))
 
-
+        Shopcart(user_id=30, product_id=1, quantity=5, price=12.00).save()
+        Shopcart(user_id=31, product_id=2, quantity=5, price=12.00).save()
+        shopcart = Shopcart.list_users()
+        cnt = len(shopcart)
+        resp = self.app.get('/shopcarts',
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)    
+        data = json.loads(resp.data)
+        self.assertEqual(cnt, len(data))
 
 
 
@@ -296,6 +304,14 @@ class TestShopcartServer(unittest.TestCase):
     def test_vcap_services(self):
         db_url = vcap.get_database_uri()
         self.assertNotEqual(db_url, "")
+
+    def test_invalid_content_type(self):       
+        data = dict(user_id=10, product_id=10, quantity=5, price=12.00)
+        resp = self.app.post('/shopcarts',
+                             data=data,
+                             content_type='dict')
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
 
 ######################################################################
 # Utility functions
