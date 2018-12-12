@@ -86,11 +86,6 @@ def request_validation_error(error):
     #return bad_request(error)
     message = error.message or str(error)
     app.logger.info(message)
-    #return {
-    #    'status_code': status.HTTP_400_BAD_REQUEST,
-    #    'error': 'Bad Request',
-    #    'message': message
-    #}, status.HTTP_400_BAD_REQUESTa
     return {'status':400, 'error': 'Request Error', 'message': message}, 400
 
 
@@ -139,8 +134,8 @@ class ShopcartResource(Resource):
        shopcarts = []
        shopcarts = Shopcart.findByUserId(user_id)
        print(shopcarts.count())
-       if not shopcarts:
-           api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
+       #if not shopcarts:
+           #api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
        if shopcarts.count() == 0:
            api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
            #raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
@@ -423,16 +418,6 @@ def shopcarts_reset():
 def init_db():
     """ Initlaize the SQLAlchemy app"""
     Shopcart.init_db()
-
-# load sample data
-def data_load(payload):
-    """ Loads a Shopcart entry into the database """
-    shopcart = Shopcart(payload['user_id'], payload['product_id'], payload['quantity'], payload['price'])
-    shopcart.save()
-
-def data_reset():
-    """ Removes all Shopcart data from the database """
-    Shopcart.remove_all()
 
 def check_content_type(content_type):
     """ Checks that the media type is correct """
