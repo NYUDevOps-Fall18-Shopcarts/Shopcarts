@@ -271,13 +271,16 @@ class ProductResource(Resource):
         data = api.payload
         app.logger.info(data)
         shopcart.deserialize(data)
-
-        q = 0;
+        q = 0
         try:
-            q = int(shopcart.quantity)
+           q = int(shopcart.quantity)
         except ValueError:
                 app.logger.info("value error")
-                raise DataValidationError
+                abort(status.HTTP_400_BAD_REQUEST, 'Quantity parameter is not valid: {}'.format(shopcart.quantity))
+
+        if q < 1:
+            app.logger.info("Added quantity is 0")
+            abort(status.HTTP_400_BAD_REQUEST, 'You should input number more than 0 for quantity to add a product')
 
         shopcart.user_id = user_id
         shopcart.product_id = product_id
