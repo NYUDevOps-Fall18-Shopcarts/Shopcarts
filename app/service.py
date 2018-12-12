@@ -128,7 +128,7 @@ class ShopcartResource(Resource):
     # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
     #################################################################
     @ns.doc('get_shopcart_list')
-    
+    @ns.response(200, 'Success')
     @ns.response(404, 'Shopcart not found')
     @ns.marshal_list_with(shopcart_model)
     def get(self, user_id):
@@ -222,6 +222,7 @@ class ProductResource(Resource):
     # RETRIEVES A PRODUCT FROM USER'S SHOPCART
     #------------------------------------------------------------------
     @ns.doc('get_product')
+    @ns.response(200, 'Success')
     @ns.response(404, 'Product not found')
     @ns.marshal_with(shopcart_model)
 
@@ -259,6 +260,7 @@ class ProductResource(Resource):
     # UPDATE A PRODUCT IN USER'S SHOPCART
     #------------------------------------------------------------------
     @ns.doc('update_product')
+    @ns.response(200, 'Success')
     @ns.response(404, 'Product not found')
     @ns.response(400, 'The posted Product data was not valid')
     @ns.expect(shopcart_model)
@@ -293,6 +295,7 @@ class ShopcartCollection(Resource):
     # LIST ALL SHOPCARTS
     #------------------------------------------------------------------
     @ns.doc('list_shopcarts')
+    @ns.response(200, 'Success')
     #@ns.param('category', 'List Shopcarts grouped by user_id')
     def get(self):
         """ 

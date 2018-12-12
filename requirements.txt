@@ -8,6 +8,7 @@ ibm-db-sa==0.3.2
 psycopg2-binary==2.7.4
 Cerberus==1.1
 # Testing
+gunicorn==19.9.0
 honcho==1.0.1
 pylint==1.9.3
 mock==2.0.0
