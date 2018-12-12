@@ -141,8 +141,8 @@ $(function () {
 
     });
 
-	
-	
+
+
     // ****************************************
     // Retrieve All items in shopcart
     // ****************************************
@@ -165,7 +165,7 @@ $(function () {
 
 		var obj = jQuery.parseJSON(res);
                 for (var i=0;i<obj.length;i++) {
-		    usr_id = obj[i].user_id;	
+		    usr_id = obj[i].user_id;
 		    header = '<tr><colspan=3><td><b>User ID</b> : '+usr_id+"</td></tr>";
 		    $("#search_results").append(header);
                     prod = obj[i].products;
@@ -185,18 +185,18 @@ $(function () {
 
 		$("search_results").append("</table>");
                 flash_message("Success")
-            });     
+            });
             ajax.fail(function(res){
                 $("#search_results").empty();
                 $("#query_search_results").empty();
                 clear_form_data()
                 flash_message(res.responseJSON.message)
             });
-		    
 
 
 
-          
+
+
 	} else {
 
 
@@ -385,7 +385,7 @@ $(function () {
 	       $("#search_results").append(row);
 	   }
 	   $("#search_results").append('</thead></table>');
-           	
+
 
 
            flash_message("Success")
@@ -396,6 +396,9 @@ $(function () {
           flash_message(res.responseJSON.message)
        });
     });
-       
- 
+
 })
+window.onload = function(){
+  document.getElementById("link").href = window.location.href.toString()+"apidocs";
+  document.getElementById("link").innerHTML = window.location.href.toString()+"apidocs";
+}
