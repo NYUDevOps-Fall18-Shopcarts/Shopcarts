@@ -131,11 +131,16 @@ class TestShopcartServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
         self.assertTrue(len(resp.data) > 0)
-
-        resp = self.app.get('/shopcarts/12345',
-                            content_type='application/json')
-        self.assertRaises(NotFound)
-        self.assertEqual(len(json.loads(resp.data)),0)
+      
+        resp = self.app.get('/shopcarts/999',
+                             content_type='application/json')
+        #self.assertRaises(NotFound)
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        data = json.loads(resp.data)
+        print(data)
+        print(data['message'])
+        self.assertIn('was not found', data['message'])
+        ##self.assertEqual(len(json.loads(resp.data)),0)
 
 
 
@@ -299,8 +304,11 @@ class TestShopcartServer(unittest.TestCase):
     def get_product_count(self, user_id):
         """ save the current number of products in user's shopcart """
         resp = self.app.get('/shopcarts/'+str(user_id))
+        #self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        if (resp.status_code == status.HTTP_404_NOT_FOUND):
+		return 0
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = json.loads(resp.data)
+	data = json.loads(resp.data)
         return len(data)
 
 ######################################################################

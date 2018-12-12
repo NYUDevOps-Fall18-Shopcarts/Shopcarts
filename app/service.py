@@ -33,7 +33,9 @@ def index():
     """ Root URL response """
     return app.send_static_file('index.html')
 
- ######################################################################
+
+
+######################################################################
 ######################################################################
 # Configure Swagger before initilaizing it
 ######################################################################
@@ -41,14 +43,14 @@ api = Api(app,
           version='1.0.0',
           title='Shopcarts REST API Service',
           description='This service aims at providing users facility to add, remove, modify and list items in their cart.',
-          doc='/apidocs/'
+          doc='/apidocs'
           # prefix='/api'
          )
 
 amount_fields = api.model('Resource', {
     'amount':fields.Integer(required=True,
                             description='the amount for searching user shopcart')
-    })
+    }, mask='{amount}' )
 
 
 # This namespace is the start of the path i.e., /pets
@@ -64,7 +66,7 @@ shopcart_model = api.model('Shopcart', {
                               description='The quantity or number of that particular product we want to add to cart'),
     'price': fields.Float(required=True,
                                 description='Cost of one item of the product')
-})
+}, mask='user_id, product_id, quantity, price')
 
 ######################################################################
 # Special Error Handlers
@@ -81,7 +83,16 @@ def database_connection_error(error):
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
-    return bad_request(error)
+    #return bad_request(error)
+    message = error.message or str(error)
+    app.logger.info(message)
+    return {'status':400, 'error': 'Request Error', 'message': message}, 400
+
+
+
+
+
+
 
 ######################################################################
 # GET HEALTH CHECK
@@ -112,20 +123,22 @@ class ShopcartResource(Resource):
     # GET THE LIST OF THE PRODUCT IN A USER'S SHOPCART
     #################################################################
     @ns.doc('get_shopcart_list')
-    #@ns.response(404, 'Shopcart not found')
+    
+    @ns.response(404, 'Shopcart not found')
     @ns.marshal_list_with(shopcart_model)
     def get(self, user_id):
        """ Get the shopcart entry for user (user_id)
        This endpoint will show the list of products in user's shopcart from the database
        """
-
        app.logger.info("Request to get the list of the product in a user [%s]'s shopcart", user_id)
        shopcarts = []
        shopcarts = Shopcart.findByUserId(user_id)
        print(shopcarts.count())
        if not shopcarts:
-       #if shopcarts.count() == 0:
-           raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
+           api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
+       if shopcarts.count() == 0:
+           api.abort(status.HTTP_404_NOT_FOUND, "Shopcart with user_id '{}' was not found.".format(user_id))
+           #raise NotFound("Shopcart with user_id '{}' was not found.".format(user_id))
        results = [shopcart.serialize() for shopcart in shopcarts]
        return results, status.HTTP_200_OK
 
@@ -166,9 +179,10 @@ class ShopcartAction(Resource):
     #################################################################
     @ns.doc('get_shopcart_total')
     #@ns.response(404, 'Shopcart not found')
+    @ns.response(200, 'Success')
     def get(self, user_id):
        """ Get the shopcart entry for user (user_id)
-       This endpoint will show the list of products in user's shopcart from the database
+       This endpoint will show the total amount of the all items in the shopcart along with the list of items in user's shopcart 
        """
 
        app.logger.info("Request to get the total amount of a user [%s]'s shopcart", user_id)
@@ -205,6 +219,7 @@ class ProductResource(Resource):
     @ns.doc('get_product')
     @ns.response(404, 'Product not found')
     @ns.marshal_with(shopcart_model)
+
     def get(self, user_id, product_id):
         """
         Retrieve a product from user's shopcart
@@ -273,9 +288,13 @@ class ShopcartCollection(Resource):
     # LIST ALL SHOPCARTS
     #------------------------------------------------------------------
     @ns.doc('list_shopcarts')
-    @ns.param('category', 'List Shopcarts grouped by user_id')
+    #@ns.param('category', 'List Shopcarts grouped by user_id')
     def get(self):
-        """ Returns all of the Shopcarts grouped by user_id """
+        """ 
+        Returns all of the Shopcarts grouped by user_id 
+        This endpoint will give the information of all shopcart of all users
+        """
+
         app.logger.info('Request to list Shopcarts...')
 
         users = Shopcart.list_users();
@@ -309,8 +328,8 @@ class ShopcartCollection(Resource):
     @ns.marshal_with(shopcart_model, code=201)
     def post(self):
         """
-        Creates a Pet
-        This endpoint will create a Pet based the data in the body that is posted
+        add a product to a shopcart
+        This endpoint will add a new item to a user's shopcart
         """
         app.logger.info('Request to Add an Item to Shopcart')
         check_content_type('application/json')
@@ -349,6 +368,7 @@ class ShopcartUsersResource(Resource):
     # QUERY DATABASE FOR SHOPCARTS HAVING PRODUCTS WORTH MORE THAN GIVEN AMOUNT
     ############################################################################
     @ns.doc('get_users_with_shopcart_more_than_given_amount')
+    @ns.response(200, 'Sucess')
     @ns.response(400, 'parameter amount not found')
     def get(self):
         """
@@ -380,7 +400,9 @@ class ShopcartUsersResource(Resource):
 ######################################################################
 @app.route('/shopcarts/reset', methods=['DELETE'])
 def shopcarts_reset():
-    """ Clears all items from shopcarts for all users from the database """
+    """ Clears all items from shopcarts for all users from the database 
+    This endpoint will remove all the shopcart information in the server
+    """
     Shopcart.remove_all()
     return '', status.HTTP_204_NO_CONTENT
 

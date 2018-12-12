@@ -17,11 +17,9 @@ def get_database_uri():
         database_uri = os.environ['DATABASE_URI']
     elif 'VCAP_SERVICES' in os.environ:
         # Get the credentials from the Bluemix environment
-        logging.info("Using VCAP_SERVICES...")
         services = json.loads(os.environ['VCAP_SERVICES'])
         database_uri = services['dashDB For Transactions'][0]['credentials']["uri"]
     else:
-        logging.info("Using localhost database...")
         database_uri = "postgres://postgres:postgres@localhost:5432/postgres"
 
     return database_uri
