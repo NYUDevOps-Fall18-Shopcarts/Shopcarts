@@ -80,18 +80,15 @@ def database_connection_error(error):
     return {'status':500, 'error': 'Server Error', 'message': message}, 500
 
 
+
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
-    #return bad_request(error)
+    api.logger("error handler")
     message = error.message or str(error)
     app.logger.info(message)
-    return {'status':400, 'error': 'Request Error', 'message': message}, 400
-
-
-
-
-
+    #return {'status':400, 'error': 'Request Error', 'message': message}, 400
+    api.abort(status.HTTP_400_BAD_REQUEST, "Shopcart ")
 
 
 ######################################################################
@@ -274,6 +271,14 @@ class ProductResource(Resource):
         data = api.payload
         app.logger.info(data)
         shopcart.deserialize(data)
+
+        q = 0;
+        try:
+            q = int(shopcart.quantity)
+        except ValueError:
+                app.logger.info("value error")
+                raise DataValidationError
+
         shopcart.user_id = user_id
         shopcart.product_id = product_id
         shopcart.save()
@@ -345,8 +350,8 @@ class ShopcartCollection(Resource):
             q = int(shopcart.quantity)
         except ValueError:
                 app.logger.info("value error")
-                raise DataValidationError
-                #abort(status.HTTP_400_BAD_REQUEST, 'Quantity parameter is not valid: {}'.format(shopcart.quantity))
+                #raise DataValidationError
+                abort(status.HTTP_400_BAD_REQUEST, 'Quantity parameter is not valid: {}'.format(shopcart.quantity))
 
         if shopcart.user_id is None or shopcart.user_id == '' or shopcart.product_id is None or shopcart.product_id =='' \
             or shopcart.price is None or shopcart.price == '' or shopcart.quantity is None or shopcart.quantity == '':
