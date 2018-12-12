@@ -237,7 +237,7 @@ class ProductResource(Resource):
     @ns.response(204, 'Product deleted')
     def delete(self, user_id, product_id):
         """
-        Delete a Pet
+        Delete a product from a user's shopcart
 
         This endpoint will delete a product based the id of product and user specified in the path
         """
@@ -364,7 +364,7 @@ class ShopcartCollection(Resource):
             #Check if the entry exists, if yes then increase quantity of product
             exists = Shopcart.find(shopcart.user_id, shopcart.product_id)
             if exists:
-                exists.quantity = exists.quantity + 1
+                exists.quantity = exists.quantity + q
                 exists.save()
                 shopcart = exists
 
