@@ -240,7 +240,7 @@ class ProductResource(Resource):
     @ns.response(204, 'Product deleted')
     def delete(self, user_id, product_id):
         """
-        Delete a Pet
+        Delete a product from a user's shopcart
 
         This endpoint will delete a product based the id of product and user specified in the path
         """
